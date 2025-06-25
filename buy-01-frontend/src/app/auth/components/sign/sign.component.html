@@ -1,0 +1,11 @@
+<div class="container">
+    <div class="left-panel">
+        <div class="left-panel-content">
+            <h1>{{ !isSignIn ? 'Create your Account !' : 'Connect in your Account' }}</h1>
+            <p>Share your product<br>and sell it !</p>
+            <button class="btn primary-btn" (click)="toggleSignIn()">Sign-in/-up</button>
+        </div>
+    </div>
+    <app-sign-up class="right-panel" *ngIf="!isSignIn" ></app-sign-up>
+    <app-sign-in class="right-panel" *ngIf="isSignIn" ></app-sign-in>
+</div>
