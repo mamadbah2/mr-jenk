@@ -23,9 +23,11 @@ public class UserServicesImpl implements UserServices {
     @Override
     public String login(User user) {
         try {
-            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()));
+            Authentication authentication = authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword())
+            );
             if (authentication.isAuthenticated()) {
-                return jwtServices.generateToken(user.getEmail());
+                return jwtServices.generateToken(authentication);
             }
         } catch (AuthenticationException e) {
             System.out.println( e.getMessage());

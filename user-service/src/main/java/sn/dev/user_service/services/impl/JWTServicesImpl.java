@@ -1,89 +1,40 @@
 package sn.dev.user_service.services.impl;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.jwt.JwtClaimsSet;
+import org.springframework.security.oauth2.jwt.JwtEncoder;
+import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 import sn.dev.user_service.services.JWTServices;
 
-import javax.crypto.KeyGenerator;
-import javax.crypto.SecretKey;
-import java.security.NoSuchAlgorithmException;
-import java.util.Base64;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class JWTServicesImpl implements JWTServices {
-    private final Map<String, Object> claims = new HashMap<>();
-    private final String secret;
 
-    public JWTServicesImpl() {
-        try {
-            KeyGenerator keyGenerator =  KeyGenerator.getInstance("HmacSHA256");
-            SecretKey secretKey = keyGenerator.generateKey();
-            secret = Base64.getEncoder().encodeToString(secretKey.getEncoded());
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
-    public SecretKey getKey() {
-        byte[] bytes = secret.getBytes();
-        return Keys.hmacShaKeyFor(bytes);
-    }
+    private final JwtEncoder jwtEncoder;
 
     @Override
-    public String generateToken(String subject) {
-        // Le subject c'est soit le mail soit le password
-        return Jwts.builder()
-                .claims()
-                .add(claims)
-                .subject(subject)
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + 60  * 1000 * 30)) // 30 min
-                .and()
-                .signWith(getKey())
-                .compact();
-    }
+    public String generateToken(Authentication authentication) {
+        Instant instant = Instant.now();
+        String formated_authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(" "));
 
-    @Override
-    public String extractSubject(String token) {
-        return extractClaim(token, Claims::getSubject);
-    }
+        JwtClaimsSet jwtClaimsSet = JwtClaimsSet.builder()
+                .subject(authentication.getName())
+                .issuedAt(instant)
+                .expiresAt(instant.plus(120, ChronoUnit.MINUTES))
+                .issuer("user-service")
+                .claim("authorities", formated_authorities)
+                .build();
 
-    @Override
-    public boolean validateToken(String token, UserDetails userDetails) {
-        final String username = extractSubject(token);
-        return (username.equals(userDetails.getUsername())  && !isTokenExpired(token));
-    }
-
-    @Override
-    public <T> T extractClaim(String token, Function<Claims, T> claimResolver) {
-        final Claims claims = extractAllClaims(token);
-        return claimResolver.apply(claims);
-    }
-
-    @Override
-    public Claims extractAllClaims(String token) {
-        return Jwts.parser()
-                .verifyWith(getKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
-    }
-
-    @Override
-    public boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    @Override
-    public Date extractExpiration(String token) {
-        return extractClaim(token, Claims::getExpiration);
+        return jwtEncoder.encode(JwtEncoderParameters.from(jwtClaimsSet)).getTokenValue();
     }
 }
