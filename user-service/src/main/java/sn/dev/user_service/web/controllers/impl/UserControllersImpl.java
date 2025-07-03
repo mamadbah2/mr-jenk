@@ -18,7 +18,7 @@ public class UserControllersImpl implements UserControllers {
     @Override
     @PostMapping("api/users/login")
     public ResponseEntity<String> login(@RequestBody LoginRequests loginRequests) {
-        User user = loginRequests.toEntity();
+        User user = userServices.findByEmail(loginRequests.getEmail());
         return ResponseEntity.ok(userServices.login(user));
     }
 }
