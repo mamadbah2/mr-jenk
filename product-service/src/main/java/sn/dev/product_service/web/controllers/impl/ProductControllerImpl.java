@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.validation.Valid;
@@ -19,19 +20,20 @@ import sn.dev.product_service.web.controllers.ProductController;
 import sn.dev.product_service.web.dto.ProductCreateDTO;
 import sn.dev.product_service.web.dto.ProductResponseDTO;
 
-@RequiredArgsConstructor
 @RestController
+@RequiredArgsConstructor
 public class ProductControllerImpl implements ProductController {
     private final ProductService productService;
-    private MediaServiceClient mediaServiceClient;
-    private final String maxAge = "300";
+    private final MediaServiceClient mediaServiceClient;
+    private String maxAge = "300";
 
     @Override
     public ResponseEntity<ProductResponseDTO> create(@Valid ProductCreateDTO productCreateDTO) {
         System.out.println("CREATE product : " + productCreateDTO);
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String userId = (String) auth.getPrincipal();
+        Jwt jwt = (Jwt) auth.getPrincipal();
+        String userId = jwt.getClaimAsString("userID");
 
         Product product = productService.create(productCreateDTO.toProduct(userId));
         List<Media> medias = productCreateDTO.getImages().stream()
