@@ -21,16 +21,30 @@ export class AuthService {
   }
 
   register(dataForm:any, file:any):Observable<any> {
+    let avatarPath= "path/to/image"
+    if (file) {
+      console.log("We have file")
+      const formData = new FormData()
+      formData.set("file", file, file.name)
+      this.httpClient.post(`${this.apiUrl}/api/media`, formData).subscribe({
+        next: (value:any)=> {
+          console.log(value)
+          avatarPath = value.imageUrl
+          console.log("avatarPath : ", avatarPath)
+        },
+        error: err => {
+          console.log(err)
+        }
+      })
+    }
 
     const user: User = {
       name : `${dataForm.firstName} ${dataForm.lastName}`,
       email: dataForm.email,
       password: dataForm.password,
       role: dataForm.isSeller ? "SELLER" : "CLIENT",
-      avatar: "path/to/image"
+      avatar: avatarPath
     }
-
-    
 
     return this.httpClient.post(`${this.apiUrl}/api/users`, user).pipe(
       catchError(err => throwError(()=>err))

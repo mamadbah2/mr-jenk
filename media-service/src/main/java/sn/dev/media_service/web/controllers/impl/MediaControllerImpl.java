@@ -1,6 +1,8 @@
 package sn.dev.media_service.web.controllers.impl;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,6 +25,13 @@ public class MediaControllerImpl implements MediaController {
     public ResponseEntity<Media> uploadNsave(@RequestParam MultipartFile file, @RequestParam String productId) {
         Media media = mediaService.uploadAndSave(file, productId);
         return ResponseEntity.ok(media);
+    }
+
+    @Override
+    public ResponseEntity<Map<String,String>> uploadImage(MultipartFile file) {
+        Map<String,String> url = new HashMap<>();
+        url.put("imageUrl", mediaService.uploadImage(file));
+        return ResponseEntity.ok(url);
     }
 
     @Override

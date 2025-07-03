@@ -9,6 +9,8 @@ import sn.dev.media_service.data.entities.Media;
 public interface MediaService {
     Media uploadAndSave(MultipartFile media, String productId);
 
+    String uploadImage(MultipartFile media);
+
     List<Media> findByProductId(String productId);
 
     Media findById(String id);

@@ -42,6 +42,18 @@ public class MediaServiceImpl implements MediaService {
     }
 
     @Override
+    public String uploadImage(MultipartFile file) {
+        // 1. Validate file
+        String contentType = file.getContentType();
+        if (contentType == null || !isSupportedImage(contentType)) {
+            throw new IllegalArgumentException("Only JPEG, PNG, GIF and WEBP images are allowed.");
+        }
+
+        // 2. Upload file to cloud (e.g., Cloudinary, S3)
+        return cloudStorageService.upload(file);
+    }
+
+    @Override
     public Media findById(String id) {
         return mediaRepo.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Media not found with id: " + id));

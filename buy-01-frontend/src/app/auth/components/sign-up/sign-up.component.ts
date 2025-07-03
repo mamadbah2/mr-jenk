@@ -12,7 +12,7 @@ import {AuthService} from '../../services/auth.service';
 })
 export class SignUpComponent {
   selectedFileName : string = "Aucun fichier choisi"
-  selectedFile:any = null
+  selectedFile:any
 
   registerForm = new FormGroup({
     firstName: new FormControl('', [Validators.required]),
@@ -38,7 +38,7 @@ export class SignUpComponent {
 
   handleSubmit() {
     if (this.registerForm.valid) {
-      this.authService.register(this.registerForm.value).subscribe({
+      this.authService.register(this.registerForm.value, this.selectedFile).subscribe({
         next : value => {
           console.log(value)
           console.log("User cree avec succes")
