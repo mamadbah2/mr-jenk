@@ -20,7 +20,7 @@ public class JWTServicesImpl implements JWTServices {
     private final JwtEncoder jwtEncoder;
 
     @Override
-    public String generateToken(Authentication authentication) {
+    public String generateToken(Authentication authentication, String userID) {
         Instant instant = Instant.now();
         String formated_authorities = authentication.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.joining(" "));
 
@@ -30,6 +30,7 @@ public class JWTServicesImpl implements JWTServices {
                 .expiresAt(instant.plus(120, ChronoUnit.MINUTES))
                 .issuer("user-service")
                 .claim("authorities", formated_authorities)
+                .claim("userID", userID)
                 .build();
 
         return jwtEncoder.encode(JwtEncoderParameters.from(jwtClaimsSet)).getTokenValue();

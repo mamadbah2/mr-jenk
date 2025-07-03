@@ -22,9 +22,11 @@ public class UserControllersImpl implements UserControllers {
     @Override
     @PostMapping("api/users/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequests loginRequests) {
-        User user = userServices.findByEmail(loginRequests.getEmail());
-        String token = userServices.login(user);
-        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
+        String userID = userServices.findByEmail(loginRequests.getEmail()).getId();
+        User credentialsUser = loginRequests.toEntity();
+        credentialsUser.setId(userID);
+        String token = userServices.login(credentialsUser);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(credentialsUser.getEmail());
         LoginResponse loginResponse = new LoginResponse(userDetails, token);
         return ResponseEntity.ok(loginResponse);
     }
