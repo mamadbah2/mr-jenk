@@ -1,15 +1,25 @@
 <h2>Sign Up</h2>
-<form>
+<form [formGroup]="loginForm" >
+  @if (error_message) {
+    <h3>{{error_message}}</h3>
+  }
 
-    <div class="form-group">
+
+    <div class="form-group"  >
         <label for="email" class="sr-only">Email address</label>
-        <input type="email" id="email" placeholder="Email address">
+        <input type="email" formControlName="email" id="email" placeholder="Email address">
+      @if (loginForm.get("email")?.invalid && loginForm.get("email")?.touched) {
+        <div>Email incorrect</div>
+      }
     </div>
 
     <div class="form-group">
         <label for="password" class="sr-only">Password</label>
-        <input type="password" id="password" placeholder="Password">
+        <input type="password" formControlName="password" id="password" placeholder="Password">
+      @if (loginForm.get("password")?.invalid && loginForm.get("password")?.touched) {
+        <div>Password incorrect</div>
+      }
     </div>
 
-    <button type="submit" class="btn primary-btn">Join us <span class="arrow">&rarr;</span></button>
+    <button (click)="onSubmit()" [disabled]="!loginForm.valid" class="btn primary-btn">Join us <span class="arrow">&rarr;</span></button>
 </form>

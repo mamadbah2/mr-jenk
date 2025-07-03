@@ -6,6 +6,9 @@
             <button class="btn primary-btn" (click)="toggleSignIn()">Sign-in/-up</button>
         </div>
     </div>
-    <app-sign-up class="right-panel" *ngIf="!isSignIn" ></app-sign-up>
-    <app-sign-in class="right-panel" *ngIf="isSignIn" ></app-sign-in>
+  @if (!isSignIn) {
+    <app-sign-up class="right-panel"></app-sign-up>
+  } @else {
+    <app-sign-in class="right-panel"></app-sign-in>
+  }
 </div>
