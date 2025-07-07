@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
 import { SignComponent } from "./auth/components/sign/sign.component";
+import {RouterOutlet} from '@angular/router';
 
 @Component({
   selector: 'app-root',
-  imports: [SignComponent],
+  imports: [SignComponent, RouterOutlet],
   templateUrl: './app.component.html',
   styleUrl: './app.component.css'
 })

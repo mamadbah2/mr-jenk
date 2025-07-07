@@ -35,13 +35,15 @@
             <label for="newsletter">Are you a SELLER ?</label>
         </div>
 
-      <div class="file-upload-container">
-        <input (change)="handleFileSelection($event)" type="file" id="myFileInput" class="file-upload-input">
-        <label for="myFileInput" class="file-upload-label">Choisir un avatar</label>
-        <div class="file-upload-filename" id="selectedFileName">
-          {{selectedFileName}}
+      @if (isSeller) {
+        <div class="file-upload-container">
+          <input (change)="handleFileSelection($event)" type="file" id="myFileInput" class="file-upload-input">
+          <label for="myFileInput" class="file-upload-label">Choisir un avatar</label>
+          <div class="file-upload-filename" id="selectedFileName">
+            {{selectedFileName}}
+          </div>
         </div>
-      </div>
+      }
 
         <button type="submit" class="btn primary-btn">Join us <span class="arrow">&rarr;</span></button>
     </form>

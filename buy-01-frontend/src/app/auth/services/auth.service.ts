@@ -3,6 +3,7 @@ import {catchError, Observable, of, switchMap, throwError} from 'rxjs';
 import {HttpClient} from '@angular/common/http';
 import {LoginResponse} from '../models/login.response';
 import {User} from '../models/user';
+import {MediaResponse} from '../models/media.response';
 
 @Injectable({
   providedIn: 'root'
@@ -21,27 +22,27 @@ export class AuthService {
   }
 
   register(dataForm:any, file:any):Observable<any> {
-    let avatarPath= "path/to/image"
-    let xender:Observable<any>;
+
+    const user: User = {
+      name : `${dataForm.firstName} ${dataForm.lastName}`,
+      email: dataForm.email,
+      password: dataForm.password,
+      role: dataForm.isSeller ? "SELLER" : "CLIENT",
+      avatar: "path/to/image"
+    }
 
     if (file) {
       console.log("We have file")
       const formData = new FormData()
       formData.set("file", file, file.name)
 
-      xender = this.httpClient.post(`${this.apiUrl}/api/media`, formData)
+      let xender:Observable<any> = this.httpClient.post(`${this.apiUrl}/api/media`, formData)
 
       return xender.pipe(switchMap(
-          avatarUrl => {
-            console.log(avatarUrl)
-            const user: User = {
-              name : `${dataForm.firstName} ${dataForm.lastName}`,
-              email: dataForm.email,
-              password: dataForm.password,
-              role: dataForm.isSeller ? "SELLER" : "CLIENT",
-              avatar: avatarPath
-            }
-
+          rep => {
+            console.log("$@$@@@")
+            console.log(rep)
+            user.avatar = rep?.imageUrl
             return this.httpClient.post(`${this.apiUrl}/api/users`, user).pipe(
               catchError(err => throwError(()=>err))
             );
@@ -50,23 +51,9 @@ export class AuthService {
       )
     }
 
-    return xender.pipe(switchMap(
-        avatarUrl => {
-          console.log(avatarUrl)
-          const user: User = {
-            name : `${dataForm.firstName} ${dataForm.lastName}`,
-            email: dataForm.email,
-            password: dataForm.password,
-            role: dataForm.isSeller ? "SELLER" : "CLIENT",
-            avatar: avatarPath
-          }
-
-          return this.httpClient.post(`${this.apiUrl}/api/users`, user).pipe(
+    return this.httpClient.post(`${this.apiUrl}/api/users`, user).pipe(
             catchError(err => throwError(()=>err))
-          );
-        }),
-      catchError(err => throwError(()=>err))
-    )
+          )
   }
 
   setToken(token:string) {

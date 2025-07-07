@@ -2,12 +2,12 @@ import { Component } from '@angular/core';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {AuthService} from '../../services/auth.service';
 import {NgIf} from '@angular/common';
+import {startWith} from 'rxjs';
 
 @Component({
   selector: 'app-sign-up',
   imports: [
-    ReactiveFormsModule,
-    NgIf
+    ReactiveFormsModule
   ],
   templateUrl: './sign-up.component.html',
   styleUrls: ['./sign-up.component.css', '../sign/sign.component.css'],
@@ -15,6 +15,8 @@ import {NgIf} from '@angular/common';
 export class SignUpComponent {
   selectedFileName : string = "Aucun fichier choisi"
   selectedFile:any
+  isSeller = false
+  ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif'];
 
   registerForm = new FormGroup({
     firstName: new FormControl('', [Validators.required]),
@@ -27,11 +29,29 @@ export class SignUpComponent {
   constructor(private authService: AuthService) {
   }
 
+  ngOnInit() {
+    this.registerForm.get('isSeller')?.valueChanges.pipe(
+      startWith(this.registerForm.get('isSeller')?.value)
+    ).subscribe((value) => {
+      console.log(value)
+      console.log("***********")
+      this.isSeller = !!value
+      if (!this.isSeller) {
+        this.selectedFile= null
+        this.selectedFileName= "Aucun fichier selectionne"
+      }
+      }
+    )
+  }
+
   handleFileSelection($event: Event) {
     const inputFile = $event.target as HTMLInputElement
     if (inputFile.files && inputFile.files.length > 0) {
       this.selectedFileName = inputFile.files[0].name
-      this.selectedFile = inputFile.files[0]
+      const fileExtension = this.selectedFileName.split('.').pop()?.toLowerCase();
+      if (fileExtension && this.ALLOWED_EXTENSIONS.includes(fileExtension)) {
+        this.selectedFile = inputFile.files[0]
+      }
     } else {
       this.selectedFileName = "Aucun fichier choisi"
       this.selectedFile = null
