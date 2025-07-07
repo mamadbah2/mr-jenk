@@ -9,6 +9,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,6 +20,7 @@ import sn.dev.product_service.services.ProductService;
 import sn.dev.product_service.web.controllers.ProductController;
 import sn.dev.product_service.web.dto.ProductCreateDTO;
 import sn.dev.product_service.web.dto.ProductResponseDTO;
+import sn.dev.product_service.web.dto.ProductUpdateDTO;
 
 @RestController
 @RequiredArgsConstructor
@@ -49,31 +51,74 @@ public class ProductControllerImpl implements ProductController {
     public ResponseEntity<List<ProductResponseDTO>> getAll() {
         System.out.println("GET(getAll) products");
 
-        // List<ProductResponseDTO> allDtos = productService.getAll().stream()
-        // .map(ProductResponseDTO::new)
-        // .toList();
-        // return ResponseEntity.ok()
-        // .header(HttpHeaders.CACHE_CONTROL, "public, max-age=" + maxAge)
-        // .body(allDtos);
+        List<Product> products = productService.getAll();
+        List<ProductResponseDTO> responseList = products.stream()
+                .map(product -> {
+                    List<Media> medias = mediaServiceClient
+                            .getByProductId(product.getId())
+                            .getBody();
 
-        return null;
+                    return new ProductResponseDTO(product, medias);
+                })
+                .toList();
+
+        return ResponseEntity.ok(responseList);
     }
 
     @Override
     public ResponseEntity<ProductResponseDTO> getById(String id) {
-        // TODO Auto-generated method stub
-        return null;
+        System.out.println("GET(product by id) product with id: " + id);
+
+        Product product = productService.getById(id);
+        List<Media> medias = mediaServiceClient
+                .getByProductId(id)
+                .getBody();
+
+        return ResponseEntity.ok(new ProductResponseDTO(product, medias));
     }
 
     @Override
-    public ResponseEntity<ProductResponseDTO> update(@Valid ProductCreateDTO productCreateDTO, String id) {
-        // TODO Auto-generated method stub
-        return null;
+    public ResponseEntity<ProductResponseDTO> update(@Valid ProductUpdateDTO productUpdateDTO, String id) {
+        System.out.println("UPDATE(product by id) product with id: " + id);
+
+        Product product = productService.getById(id);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Jwt jwt = (Jwt) auth.getPrincipal();
+        String userId = jwt.getClaimAsString("userID");
+
+        if (!product.getUserId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to delete this product");
+        }
+
+        Product productToUpdate = productUpdateDTO.toProduct(userId);
+        productToUpdate.setId(id);
+
+        Product updatedProduct = productService.update(productToUpdate);
+
+        List<Media> medias = mediaServiceClient.getByProductId(updatedProduct.getId()).getBody();
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CACHE_CONTROL, "public, max-age=" + maxAge)
+                .body(new ProductResponseDTO(updatedProduct, medias));
+
     }
 
     @Override
     public ResponseEntity<Void> delete(String id) {
-        // TODO Auto-generated method stub
-        return null;
+        System.out.println("DELETE(product by id) product with id: " + id);
+
+        Product product = productService.getById(id);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Jwt jwt = (Jwt) auth.getPrincipal();
+        String userId = jwt.getClaimAsString("userID");
+
+        if (!product.getUserId().equals(userId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to delete this product");
+        }
+
+        productService.delete(product);
+        mediaServiceClient.deleteByProductId(id);
+
+        return ResponseEntity.noContent().build();
     }
 }

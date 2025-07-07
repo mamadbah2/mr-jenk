@@ -2,7 +2,9 @@ package sn.dev.product_service.services.impl;
 
 import java.util.List;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import sn.dev.product_service.data.entities.Product;
 import sn.dev.product_service.data.repo.ProductRepo;
@@ -23,37 +25,33 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public List<Product> getAll() {
-        // TODO Auto-generated method stub
-        return null;
+        return productRepo.findAll();
     }
 
     @Override
     public Product getById(String id) {
-        // TODO Auto-generated method stub
-        return null;
+        return productRepo.findById(id)
+                .orElseThrow(
+                        () -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found with id: " + id));
     }
 
     @Override
     public List<Product> getByUserId(String userId) {
-        // TODO Auto-generated method stub
-        return null;
+        return productRepo.findByUserId(userId);
     }
 
     @Override
-    public Product update(Product productCreateDTO, String id) {
-        // TODO Auto-generated method stub
-        return null;
+    public Product update(Product product) {
+        return productRepo.save(product);
     }
 
     @Override
-    public void delete(String id) {
-        // TODO Auto-generated method stub
-
+    public void delete(Product product) {
+        productRepo.delete(product);
     }
 
     @Override
     public void deleteByUserId(String userId) {
-        // TODO Auto-generated method stub
-
+        productRepo.deleteByUserId(userId);
     }
 }

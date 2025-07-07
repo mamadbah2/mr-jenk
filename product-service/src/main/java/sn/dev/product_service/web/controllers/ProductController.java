@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import jakarta.validation.Valid;
 import sn.dev.product_service.web.dto.ProductCreateDTO;
 import sn.dev.product_service.web.dto.ProductResponseDTO;
+import sn.dev.product_service.web.dto.ProductUpdateDTO;
 
 @RequestMapping("/api/products")
 public interface ProductController {
@@ -27,7 +28,7 @@ public interface ProductController {
     ResponseEntity<ProductResponseDTO> getById(@PathVariable String id);
 
     @PutMapping("/{id}")
-    ResponseEntity<ProductResponseDTO> update(@ModelAttribute @Valid ProductCreateDTO productCreateDTO,
+    ResponseEntity<ProductResponseDTO> update(@ModelAttribute @Valid ProductUpdateDTO productUpdateDTO,
             @PathVariable String id);
 
     @DeleteMapping("/{id}")

@@ -7,7 +7,7 @@ import sn.dev.product_service.data.entities.Product;
 public interface ProductService {
     Product create(Product product);
 
-    Product update(Product product, String id);
+    Product update(Product product);
 
     Product getById(String id);
 
@@ -15,7 +15,7 @@ public interface ProductService {
 
     List<Product> getAll();
 
-    void delete(String id);
+    void delete(Product product);
 
     void deleteByUserId(String userId);
 }
