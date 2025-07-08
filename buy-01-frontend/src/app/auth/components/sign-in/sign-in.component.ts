@@ -33,10 +33,10 @@ export class SignInComponent {
           this.authService.setToken(JSON.stringify(loginResponse))
           if (loginResponse?.role.includes("SELLER")) {
             console.log("Redirection vers page SELLER")
-            this.router.navigate(["/"])
+            this.router.navigate(["/products"])
           } else {
             console.log("Redirection vers page CLIENT")
-            this.router.navigate(["/"])
+            this.router.navigate(["/products"])
           }
           /* this.router.navigate(["/product"]) */
         },
