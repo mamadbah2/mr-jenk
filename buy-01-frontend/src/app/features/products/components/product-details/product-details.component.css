@@ -11,28 +11,10 @@
   --shadow-medium: rgba(0, 0, 0, 0.12);
 }
 
-/* Base et typographie */
-body {
-  font-family: 'Arial', sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: var(--background-color);
-  color: var(--text-color);
-  line-height: 1.6;
-}
-
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-}
-
-/* En-tête (Header) */
-.header {
-  background-color: var(--card-background);
-  border-bottom: 1px solid var(--border-color);
-  padding: 15px 0;
-  box-shadow: 0 2px 4px var(--shadow-light);
 }
 
 .header .container {
@@ -240,16 +222,6 @@ body {
 
 .seller-email a:hover {
   text-decoration: underline;
-}
-
-/* Footer */
-.footer {
-  background-color: var(--text-color);
-  color: white;
-  text-align: center;
-  padding: 20px 0;
-  margin-top: 40px;
-  font-size: 0.9em;
 }
 
 /* Media Queries pour la responsivité */

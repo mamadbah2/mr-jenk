@@ -1,48 +1,29 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Détails du Produit</title>
-  <link rel="stylesheet" href="style.css"> </head>
-<body>
-<header class="header">
-  <div class="container">
-    <h1 class="logo">Votre Logo</h1>
-    <nav class="nav">
-      <a href="#" class="nav-link">Accueil</a>
-      <a href="#" class="nav-link">Produits</a>
-      <a href="#" class="nav-link">Contact</a>
-    </nav>
-  </div>
-</header>
+
 
 <main class="product-detail-page">
   <div class="container">
     <div class="product-detail-card">
       <div class="product-gallery">
         <div class="main-image-container">
-          <img src="https://via.placeholder.com/600x400?text=Image+Principale+Produit" alt="Image principale du produit" class="main-image" id="mainProductImage">
+          <img src="{{product!.images[0].imageUrl}}" alt="Image principale du produit" class="main-image" id="mainProductImage">
         </div>
         <div class="thumbnail-container">
-          <img src="https://via.placeholder.com/100x70?text=Thumb+1" alt="Miniature 1" class="thumbnail" onclick="changeMainImage(this)">
-          <img src="https://via.placeholder.com/100x70?text=Thumb+2" alt="Miniature 2" class="thumbnail" onclick="changeMainImage(this)">
-          <img src="https://via.placeholder.com/100x70?text=Thumb+3" alt="Miniature 3" class="thumbnail" onclick="changeMainImage(this)">
-          <img src="https://via.placeholder.com/100x70?text=Thumb+4" alt="Miniature 4" class="thumbnail" onclick="changeMainImage(this)">
+          @for (image of product!.images; track image.id) {
+            <img src="{{image.imageUrl}}" alt="Miniature {{image.id}}" class="thumbnail" onclick="changeMainImage(this)">
+          }
         </div>
       </div>
 
       <div class="product-info">
-        <h2 class="product-title">Nom du Produit Exceptionnel</h2>
-        <p class="product-price">129.99 €</p>
+        <h2 class="product-title">{{product?.name}}</h2>
+        <p class="product-price">{{product?.price}} €</p>
         <p class="product-description">
-          Voici une description détaillée du produit. Il s'agit d'un article de haute qualité, conçu pour répondre à tous vos besoins. Fabriqué avec des matériaux durables et une finition impeccable, il garantit une satisfaction durable. Idéal pour un usage quotidien ou pour des occasions spéciales.
+          {{product?.description}}
         </p>
         <div class="product-meta">
-          <p><strong>Quantité disponible:</strong> 50</p>
-          <p><strong>Catégorie:</strong> Électronique</p>
+          <p><strong>Quantité disponible:</strong> {{product?.quantity}}</p>
+          <p><strong>Catégorie:</strong> All Type</p>
         </div>
-        <button class="add-to-cart-button">Ajouter au panier</button>
       </div>
     </div>
 
@@ -54,7 +35,7 @@
         </div>
         <div class="seller-details">
           <p class="seller-name"><strong>Nom du Vendeur</strong></p>
-          <p class="seller-email">Email: <a href="mailto:vendeur@example.com">vendeur@example.com</a></p>
+          <p class="seller-email">Email: <a href="mailto:vendeur@example.com">vendeurexample.com</a></p>
           <p class="seller-location">Localisation: Ville, Pays</p>
           <p class="seller-join-date">Membre depuis: Janvier 2023</p>
           <button class="contact-seller-button">Contacter le vendeur</button>
@@ -64,11 +45,7 @@
   </div>
 </main>
 
-<footer class="footer">
-  <div class="container">
-    <p>&copy; 2025 Votre Entreprise. Tous droits réservés.</p>
-  </div>
-</footer>
+
 
 <script>
   function changeMainImage(thumbnail) {
@@ -88,5 +65,3 @@
     }
   });
 </script>
-</body>
-</html>

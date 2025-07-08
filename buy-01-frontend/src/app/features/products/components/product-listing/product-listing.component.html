@@ -9,7 +9,7 @@
           <h2 class="product-title"> {{product.name}} </h2>
           <p class="product-description">{{product.description}}</p>
           <div class="product-price">{{product.price}}</div>
-          <a class="buy-button"  >View Detail</a>
+          <a class="buy-button" [routerLink]="['/products', product.id]" >View Detail</a>
         </div>
       </div>
     }
