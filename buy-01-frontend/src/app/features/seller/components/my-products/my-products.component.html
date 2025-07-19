@@ -1,0 +1,226 @@
+<div class="my-products-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-content">
+      <h1 class="page-title">
+        <lucide-icon [img]="Package" class="title-icon"></lucide-icon>
+        My Products
+      </h1>
+      <p class="page-subtitle">
+        Manage your product inventory and listings
+      </p>
+    </div>
+    <div class="header-actions">
+      <button class="btn-primary" disabled title="Coming soon">
+        <lucide-icon [img]="Plus" class="btn-icon"></lucide-icon>
+        Add Product
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Overview -->
+  <div class="stats-overview">
+    <div class="stat-item">
+      <div class="stat-icon">
+        <lucide-icon [img]="Package"></lucide-icon>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value">{{ totalProducts }}</div>
+        <div class="stat-label">Total Products</div>
+      </div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-icon">
+        <lucide-icon [img]="Play"></lucide-icon>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value">{{ activeProducts }}</div>
+        <div class="stat-label">Active</div>
+      </div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-icon">
+        <lucide-icon [img]="Pause"></lucide-icon>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value">{{ outOfStockProducts }}</div>
+        <div class="stat-label">Out of Stock</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters and Search -->
+  <div class="filters-section">
+    <div class="search-container">
+      <div class="search-input-wrapper">
+        <lucide-icon [img]="Search" class="search-icon"></lucide-icon>
+        <input
+          type="text"
+          placeholder="Search products..."
+          class="search-input"
+          [value]="searchTerm"
+          (input)="onSearchChange($event)">
+      </div>
+    </div>
+
+    <div class="filters-container">
+      <div class="filter-group">
+        <label for="category-filter" class="filter-label">Category:</label>
+        <select
+          id="category-filter"
+          class="filter-select"
+          [value]="selectedCategory"
+          (change)="onCategoryChange($event)">
+          <option *ngFor="let category of categories" [value]="category.value">
+            {{ category.label }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="status-filter" class="filter-label">Status:</label>
+        <select
+          id="status-filter"
+          class="filter-select"
+          [value]="selectedStatus"
+          (change)="onStatusChange($event)">
+          <option *ngFor="let status of statusOptions" [value]="status.value">
+            {{ status.label }}
+          </option>
+        </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="sort-filter" class="filter-label">Sort by:</label>
+        <div class="sort-container">
+          <select
+            id="sort-filter"
+            class="filter-select"
+            [value]="sortBy"
+            (change)="onSortChange($event)">
+            <option *ngFor="let option of sortOptions" [value]="option.value">
+              {{ option.label }}
+            </option>
+          </select>
+          <button
+            class="sort-order-btn"
+            (click)="toggleSortOrder()"
+            [title]="sortOrder === 'asc' ? 'Sort Ascending' : 'Sort Descending'">
+            <span *ngIf="sortOrder === 'asc'">↑</span>
+            <span *ngIf="sortOrder === 'desc'">↓</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">Loading products...</p>
+  </div>
+
+  <!-- Products Content -->
+  <div *ngIf="!isLoading" class="products-content">
+    <!-- Empty State -->
+    <div *ngIf="filteredProducts.length === 0 && products.length === 0" class="empty-state">
+      <lucide-icon [img]="Package" class="empty-icon"></lucide-icon>
+      <h3 class="empty-title">No products yet</h3>
+      <p class="empty-description">
+        Start by adding your first product to begin selling
+      </p>
+      <button class="btn-primary" disabled title="Coming soon">
+        <lucide-icon [img]="Plus" class="btn-icon"></lucide-icon>
+        Add Your First Product
+      </button>
+    </div>
+
+    <!-- No Results State -->
+    <div *ngIf="filteredProducts.length === 0 && products.length > 0" class="empty-state">
+      <lucide-icon [img]="Search" class="empty-icon"></lucide-icon>
+      <h3 class="empty-title">No products found</h3>
+      <p class="empty-description">
+        Try adjusting your search or filters to find what you're looking for
+      </p>
+    </div>
+
+    <!-- Products Grid -->
+    <div *ngIf="filteredProducts.length > 0" class="products-grid">
+      <div *ngFor="let product of filteredProducts" class="product-card">
+        <div class="product-image">
+          <img
+            [src]="product.imageUrl"
+            [alt]="product.name"
+            (error)="$any($event.target).src='/assets/images/placeholder.jpg'">
+          <div class="product-status-badge">
+            <span class="status-icon">{{ getStatusIcon(product.status) }}</span>
+            <span class="status-text" [ngClass]="getStatusClass(product.status)">
+              {{ product.status | titlecase }}
+            </span>
+          </div>
+        </div>
+
+        <div class="product-info">
+          <h3 class="product-name">{{ product.name }}</h3>
+          <p class="product-description">{{ product.description }}</p>
+
+          <div class="product-details">
+            <div class="product-price">{{ formatCurrency(product.price) }}</div>
+            <div class="product-stock">
+              <lucide-icon [img]="Package" class="stock-icon"></lucide-icon>
+              <span class="stock-text">Stock: {{ product.stock }}</span>
+            </div>
+          </div>
+
+          <div class="product-meta">
+            <div class="product-category">
+              <lucide-icon [img]="Filter" class="category-icon"></lucide-icon>
+              <span class="category-text">{{ product.category | titlecase }}</span>
+            </div>
+            <div class="product-date">
+              <span class="date-text">{{ formatDate(product.updatedAt) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="product-actions">
+          <button
+            class="action-btn edit-btn"
+            (click)="editProduct(product.id)"
+            title="Edit Product">
+            <lucide-icon [img]="Edit" class="action-icon"></lucide-icon>
+          </button>
+
+          <button
+            class="action-btn duplicate-btn"
+            (click)="duplicateProduct(product.id)"
+            title="Duplicate Product">
+            <lucide-icon [img]="Copy" class="action-icon"></lucide-icon>
+          </button>
+
+          <button
+            class="action-btn toggle-btn"
+            (click)="toggleProductStatus(product.id)"
+            [title]="product.status === 'active' ? 'Deactivate Product' : 'Activate Product'">
+            <lucide-icon [img]="Pause" *ngIf="product.status === 'active'" class="action-icon"></lucide-icon>
+            <lucide-icon [img]="Play" *ngIf="product.status !== 'active'" class="action-icon"></lucide-icon>
+          </button>
+
+          <button
+            class="action-btn delete-btn"
+            (click)="deleteProduct(product.id)"
+            title="Delete Product">
+            <lucide-icon [img]="Trash2" class="action-icon"></lucide-icon>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Summary -->
+    <div *ngIf="filteredProducts.length > 0" class="results-summary">
+      <p class="results-text">
+        Showing {{ filteredProducts.length }} of {{ totalProducts }} products
+      </p>
+    </div>
+  </div>
+</div>

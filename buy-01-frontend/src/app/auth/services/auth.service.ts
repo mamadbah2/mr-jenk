@@ -74,15 +74,41 @@ export class AuthService {
 
   logout(): void {
     localStorage.removeItem("access_token"); // <-- Supprime le token ici
+    localStorage.removeItem("currentUser"); // Clear user data
     this.isAuthenticate = false;
-    this.router.navigate(["/login"]);
+    this.router.navigate(["/auth"]);
   }
 
   isLoggedIn() {
-    return this.isAuthenticate && !!this.getToken();
+    const token = localStorage.getItem("access_token");
+    this.isAuthenticate = !!token;
+    return this.isAuthenticate;
   }
 
   getToken(): string | null {
     return localStorage.getItem("access_token");
+  }
+
+  getCurrentUser(): Observable<any> {
+    const token = this.getToken();
+    if (!token) {
+      return throwError(() => new Error("No token found"));
+    }
+
+    return this.httpClient
+      .get(`${this.apiUrl}/api/users/current`, {
+        headers: new HttpHeaders({
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        }),
+      })
+      .pipe(
+        catchError((err) => {
+          if (err.status === 401) {
+            this.logout();
+          }
+          return throwError(() => err);
+        }),
+      );
   }
 }

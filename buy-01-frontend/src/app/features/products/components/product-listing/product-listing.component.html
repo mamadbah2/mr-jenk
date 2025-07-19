@@ -1,17 +1,75 @@
-
-
 <div class="container">
-  <div class="product-grid">
-    @for (product of allProducts; track product.id){
+  <!-- Enhanced Platform Welcome Message -->
+  <div class="welcome-banner" *ngIf="isGuest">
+    <div class="welcome-content">
+      <h1>Welcome to Buy-01</h1>
+      <p>Discover amazing products from sellers worldwide. Join our community and unlock the full shopping experience with exclusive deals and personalized recommendations!</p>
+      <a routerLink="/auth" class="cta-button">
+        <i class="fas fa-sign-in-alt"></i>
+        Get Started
+      </a>
+    </div>
+  </div>
+
+  <!-- Enhanced User Status Header -->
+  <div class="user-status-header" *ngIf="!isGuest">
+    <h1>Discover Amazing Products</h1>
+    <p class="subtitle">Curated selection from trusted sellers worldwide</p>
+  </div>
+
+  <!-- Enhanced Empty State -->
+  <div class="empty-state" *ngIf="allProducts && allProducts.length === 0">
+    <div class="empty-state-icon">
+      <i class="fas fa-box-open"></i>
+    </div>
+    <h2>No Products Available</h2>
+    <p>We're working hard to bring you amazing products.</p>
+    <p *ngIf="isSeller">Ready to start selling? Add your first product to get started!</p>
+    <p *ngIf="!isSeller">Check back soon for new arrivals and exciting deals.</p>
+  </div>
+
+  <!-- Enhanced Loading State -->
+  <div class="loading-state" *ngIf="allProducts === null">
+    <div class="loading-spinner"></div>
+    <p>Loading amazing products...</p>
+  </div>
+
+  <!-- Enhanced Products Grid -->
+  <div class="product-grid" *ngIf="allProducts && allProducts.length > 0">
+    @for (product of allProducts; track product.id) {
       <div class="product-card">
-        <img src="{{product.images[0].imageUrl}}" alt="Stylish Watch">
+        <!-- Enhanced Product Image -->
+        <div class="product-image-container">
+          <img
+            [src]="product.images && product.images.length > 0 ? product.images[0].imageUrl : 'assets/placeholder.jpg'"
+            [alt]="product.name"
+            loading="lazy">
+
+        </div>
+
+        <!-- Enhanced Product Content -->
         <div class="product-content">
-          <h2 class="product-title"> {{product.name}} </h2>
-          <p class="product-description">{{product.description}}</p>
-          <div class="product-price">{{product.price}}</div>
-          <a class="buy-button" [routerLink]="['/products', product.id]" >View Detail</a>
+          <h2 class="product-title">{{product.name}}</h2>
+
+          <!-- Enhanced Price Display -->
+          <div class="product-price-container">
+            <div class="product-price">
+              {{formatPrice(product.price)}}
+              <span class="price-currency">XOF</span>
+            </div>
+          </div>
+
+          <!-- Enhanced Product Actions -->
+          <div class="product-actions">
+            <a class="view-button" [routerLink]="['/products', product.id]">
+              <i class="fas fa-eye"></i>
+              View Details
+            </a>
+          </div>
         </div>
       </div>
     }
   </div>
+
+
 </div>

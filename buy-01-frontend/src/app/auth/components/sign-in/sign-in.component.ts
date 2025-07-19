@@ -1,51 +1,62 @@
-import { Component } from '@angular/core';
-import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
-import {AuthService} from '../../services/auth.service';
-import {Router} from '@angular/router';
-import {LoginResponse} from '../../models/login.response';
+import { Component } from "@angular/core";
+import {
+  FormControl,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from "@angular/forms";
+import { AuthService } from "../../services/auth.service";
+import { Router } from "@angular/router";
+import { LoginResponse } from "../../models/login.response";
+import { User } from "../../../shared/components/navbar/navbar.component";
 
 @Component({
-  selector: 'app-sign-in',
-  imports: [
-    ReactiveFormsModule,
-  ],
-  templateUrl: './sign-in.component.html',
-  styleUrls: ['./sign-in.component.css', '../sign/sign.component.css'],
+  selector: "app-sign-in",
+  imports: [ReactiveFormsModule],
+  templateUrl: "./sign-in.component.html",
+  styleUrls: ["./sign-in.component.css", "../sign/sign.component.css"],
 })
 export class SignInComponent {
   loginForm = new FormGroup({
-    email: new FormControl('', [Validators.required, Validators.email]),
-    password: new FormControl('', [Validators.required, Validators.minLength(3)])
-  })
+    email: new FormControl("", [Validators.required, Validators.email]),
+    password: new FormControl("", [
+      Validators.required,
+      Validators.minLength(3),
+    ]),
+  });
 
-  error_message = null
+  error_message = null;
 
-  constructor(private authService: AuthService, private router : Router) {
-  }
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+  ) {}
 
   onSubmit() {
     if (this.loginForm.valid) {
-      console.log("Bonjour Mr")
+      this.authService
+        .login(this.loginForm.value as { email: string; password: string })
+        .subscribe({
+          next: (loginResponse: LoginResponse) => {
+            this.authService.setToken(loginResponse.token);
 
-      this.authService.login(this.loginForm.value as {email:string, password:string}).subscribe({
-        next: (loginResponse: LoginResponse) => {
-          console.log("reponse login api : ", loginResponse)
-          this.authService.setToken(JSON.stringify(loginResponse))
-          if (loginResponse?.role.includes("SELLER")) {
-            console.log("Redirection vers page SELLER")
-            this.router.navigate(["/products"])
-          } else {
-            console.log("Redirection vers page CLIENT")
-            this.router.navigate(["/products"])
-          }
-          /* this.router.navigate(["/product"]) */
-        },
-        error: err => {
-          this.error_message = err
-          console.log("The error is : ", err)
-          setTimeout(()=> this.error_message = null, 2000)
-        }
-      })
+            // Store user data for navbar
+            const userData: User = {
+              id: loginResponse.email, // Using email as ID for now
+              email: loginResponse.email,
+              role: loginResponse.role.includes("SELLER")
+                ? ("SELLER" as const)
+                : ("CLIENT" as const),
+            };
+            localStorage.setItem("currentUser", JSON.stringify(userData));
+
+            this.router.navigate(["/"]).then();
+          },
+          error: (err) => {
+            this.error_message = err;
+            setTimeout(() => (this.error_message = null), 2000);
+          },
+        });
     }
   }
 }

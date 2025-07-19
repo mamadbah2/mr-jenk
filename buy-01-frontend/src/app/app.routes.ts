@@ -1,13 +1,57 @@
-import { Routes } from '@angular/router';
-import {SignComponent} from './auth/components/sign/sign.component';
-import {ProductListingComponent} from './features/products/components/product-listing/product-listing.component';
-import {authGuard} from './auth/guards/auth.guard';
-import {ProductDetailsComponent} from './features/products/components/product-details/product-details.component';
+import { Routes } from "@angular/router";
+import { SignComponent } from "./auth/components/sign/sign.component";
+import { ProductListingComponent } from "./features/products/components/product-listing/product-listing.component";
+import { authGuard } from "./auth/guards/auth.guard";
+import { sellerGuard } from "./auth/guards/seller.guard";
+import { ProductDetailsComponent } from "./features/products/components/product-details/product-details.component";
+import { SellerDashboardComponent } from "./features/seller/components/dashboard/seller-dashboard.component";
+import { MyProductsComponent } from "./features/seller/components/my-products/my-products.component";
 
 export const routes: Routes = [
-  {path : "auth", component: SignComponent},
-  {path : "products", component: ProductListingComponent, canActivate:[authGuard]},
-  {path : "products/:id", component:  ProductDetailsComponent},
-  {path : "", redirectTo: "products", pathMatch: "full"}
-
+  { path: "auth", component: SignComponent },
+  {
+    path: "products",
+    component: ProductListingComponent,
+    // Remove authGuard - allow guest access
+  },
+  {
+    path: "products/:id",
+    component: ProductDetailsComponent,
+    // Allow guest access to product details
+  },
+  // TODO: Create cart and orders components later
+  // {
+  //   path: "cart",
+  //   loadComponent: () =>
+  //     import("./features/cart/cart.component").then((m) => m.CartComponent),
+  //   canActivate: [authGuard], // Only logged-in users
+  // },
+  // {
+  //   path: "orders",
+  //   loadComponent: () =>
+  //     import("./features/orders/orders.component").then(
+  //       (m) => m.OrdersComponent,
+  //     ),
+  //   canActivate: [authGuard], // Only logged-in users
+  // },
+  {
+    path: "seller/dashboard",
+    component: SellerDashboardComponent,
+    canActivate: [sellerGuard], // Only sellers
+  },
+  {
+    path: "seller/my-products",
+    component: MyProductsComponent,
+    canActivate: [sellerGuard], // Only sellers
+  },
+  // TODO: Create product component later
+  // {
+  //   path: "seller/create-product",
+  //   loadComponent: () =>
+  //     import(
+  //       "./features/seller/components/create-product/create-product.component"
+  //     ).then((m) => m.CreateProductComponent),
+  //   canActivate: [sellerGuard], // Only sellers
+  // },
+  { path: "", redirectTo: "products", pathMatch: "full" },
 ];
