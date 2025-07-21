@@ -76,6 +76,14 @@ export class AuthService {
     localStorage.removeItem("access_token"); // <-- Supprime le token ici
     localStorage.removeItem("currentUser"); // Clear user data
     this.isAuthenticate = false;
+
+    // Dispatch custom event to notify of logout
+    window.dispatchEvent(
+      new CustomEvent("authStateChanged", {
+        detail: { loggedIn: false, user: null },
+      }),
+    );
+
     this.router.navigate(["/auth"]);
   }
 
@@ -91,25 +99,47 @@ export class AuthService {
 
   getCurrentUser(): Observable<any> {
     const token = this.getToken();
-    console.log(token);
     if (!token) {
       return throwError(() => new Error("No token found"));
     }
 
-    return this.httpClient
-      .get(`${this.apiUrl}/api/users/current`, {
-        headers: new HttpHeaders({
-          Authorization: `Bearer ${token}`,
-          Accept: "application/json",
-        }),
-      })
-      .pipe(
-        catchError((err) => {
-          if (err.status === 401) {
-            this.logout();
-          }
-          return throwError(() => err);
-        }),
-      );
+    try {
+      // Decode JWT token to get user data - no API call needed
+      const payload = this.decodeJwtToken(token);
+      if (!payload) {
+        return throwError(() => new Error("Invalid token"));
+      }
+
+      const userData = {
+        id: payload.userID,
+        email: payload.email,
+        role: payload.role,
+        name: payload.name || payload.email.split("@")[0],
+      };
+
+      return of(userData);
+    } catch (error) {
+      return throwError(() => new Error("Failed to decode token"));
+    }
+  }
+
+  private decodeJwtToken(token: string): any {
+    try {
+      const payload = token.split(".")[1];
+      const decodedPayload = atob(payload);
+      return JSON.parse(decodedPayload);
+    } catch (error) {
+      console.error("Error decoding JWT token:", error);
+      return null;
+    }
+  }
+
+  triggerAuthStateRefresh(): void {
+    // Trigger a custom event to refresh auth state in components
+    window.dispatchEvent(
+      new CustomEvent("authStateChanged", {
+        detail: { refresh: true },
+      }),
+    );
   }
 }

@@ -1,121 +1,104 @@
 import { Component, OnInit } from "@angular/core";
 import { CommonModule } from "@angular/common";
-import { RouterModule } from "@angular/router";
+import { RouterModule, Router } from "@angular/router";
+import { FormsModule } from "@angular/forms";
+import { SellerService, ProductResponse } from "../../services/seller.service";
 import {
-  LucideAngularModule,
-  Package,
-  Plus,
-  Search,
-  Filter,
-  Edit,
-  Copy,
-  Play,
-  Pause,
-  Trash2,
-} from "lucide-angular";
-
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  stock: number;
-  imageUrl: string;
-  status: "active" | "inactive" | "out_of_stock";
-  createdAt: Date;
-  updatedAt: Date;
-}
+  ConfirmationModalComponent,
+  ConfirmationModalData,
+} from "../../../../shared/components/confirmation-modal/confirmation-modal.component";
 
 @Component({
   selector: "app-my-products",
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule],
+  imports: [
+    CommonModule,
+    RouterModule,
+    FormsModule,
+    ConfirmationModalComponent,
+  ],
   templateUrl: "./my-products.component.html",
   styleUrls: ["./my-products.component.css"],
 })
 export class MyProductsComponent implements OnInit {
-  products: Product[] = [];
-  filteredProducts: Product[] = [];
+  products: ProductResponse[] = [];
+  filteredProducts: ProductResponse[] = [];
   isLoading = true;
   searchTerm = "";
   selectedCategory = "all";
   selectedStatus = "all";
   sortBy = "name";
   sortOrder: "asc" | "desc" = "asc";
+  viewMode: "grid" | "list" = "grid";
 
-  // Lucide icons
-  readonly Package = Package;
-  readonly Plus = Plus;
-  readonly Search = Search;
-  readonly Filter = Filter;
-  readonly Edit = Edit;
-  readonly Copy = Copy;
-  readonly Play = Play;
-  readonly Pause = Pause;
-  readonly Trash2 = Trash2;
+  // Confirmation modal properties
+  showConfirmModal = false;
+  confirmModalData: ConfirmationModalData = {
+    title: "",
+    message: "",
+    type: "danger",
+  };
+  isDeleting = false;
+  productToDelete: string | null = null;
 
-  categories = [
-    { value: "all", label: "All Categories" },
-    { value: "electronics", label: "Electronics" },
-    { value: "clothing", label: "Clothing" },
-    { value: "home", label: "Home & Garden" },
-    { value: "books", label: "Books" },
-    { value: "sports", label: "Sports" },
-    { value: "toys", label: "Toys" },
-  ];
-
-  statusOptions = [
-    { value: "all", label: "All Status" },
-    { value: "active", label: "Active" },
-    { value: "inactive", label: "Inactive" },
-    { value: "out_of_stock", label: "Out of Stock" },
-  ];
-
-  sortOptions = [
-    { value: "name", label: "Name" },
-    { value: "price", label: "Price" },
-    { value: "stock", label: "Stock" },
-    { value: "createdAt", label: "Date Created" },
-    { value: "updatedAt", label: "Last Updated" },
-  ];
+  constructor(
+    private sellerService: SellerService,
+    private router: Router,
+  ) {}
 
   ngOnInit(): void {
     this.loadProducts();
   }
 
   private loadProducts(): void {
-    // TODO: Replace with actual API call to get seller's products
-    setTimeout(() => {
-      // For now, just show empty state - no mock data
-      this.products = [];
-      this.filteredProducts = [];
-      this.isLoading = false;
-    }, 500);
+    this.isLoading = true;
+
+    // Get current user info for validation
+    const token = this.sellerService.getToken();
+    const currentUserId = token ? this.sellerService.getUserId(token) : null;
+
+    this.sellerService.getMyProducts().subscribe({
+      next: (products) => {
+        // Additional security check: validate all products belong to current user
+        if (currentUserId) {
+          const validProducts = products.filter(
+            (p) => p.userId === currentUserId,
+          );
+          this.products = validProducts;
+        } else {
+          this.products = products;
+        }
+
+        this.filteredProducts = [...this.products];
+        this.isLoading = false;
+        this.applyFilters();
+      },
+      error: (error) => {
+        console.error("Error loading products:", error);
+        this.isLoading = false;
+        this.products = [];
+        this.filteredProducts = [];
+
+        // Handle authentication errors
+        if (error.status === 401) {
+          this.router.navigate(["/auth"]);
+        }
+      },
+    });
   }
 
-  onSearchChange(event: Event): void {
-    const target = event.target as HTMLInputElement;
-    this.searchTerm = target.value;
+  refreshProducts(): void {
+    this.isLoading = true;
+    this.loadProducts();
+  }
+
+  onSearchChange(): void {
     this.applyFilters();
   }
 
-  onCategoryChange(event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    this.selectedCategory = target.value;
+  clearSearch(): void {
+    this.searchTerm = "";
     this.applyFilters();
-  }
-
-  onStatusChange(event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    this.selectedStatus = target.value;
-    this.applyFilters();
-  }
-
-  onSortChange(event: Event): void {
-    const target = event.target as HTMLSelectElement;
-    this.sortBy = target.value;
-    this.applySort();
   }
 
   toggleSortOrder(): void {
@@ -123,7 +106,7 @@ export class MyProductsComponent implements OnInit {
     this.applySort();
   }
 
-  private applyFilters(): void {
+  applyFilters(): void {
     let filtered = [...this.products];
 
     // Apply search filter
@@ -136,33 +119,28 @@ export class MyProductsComponent implements OnInit {
       );
     }
 
-    // Apply category filter
-    if (this.selectedCategory !== "all") {
-      filtered = filtered.filter(
-        (product) => product.category === this.selectedCategory,
-      );
-    }
+    // Apply category filter (removed since backend doesn't have category field)
+    // Category filtering can be implemented when backend adds category support
 
-    // Apply status filter
+    // Apply status filter based on quantity
     if (this.selectedStatus !== "all") {
-      filtered = filtered.filter(
-        (product) => product.status === this.selectedStatus,
-      );
+      if (this.selectedStatus === "active") {
+        filtered = filtered.filter((product) => product.quantity > 0);
+      } else if (this.selectedStatus === "out_of_stock") {
+        filtered = filtered.filter((product) => product.quantity === 0);
+      }
     }
 
     this.filteredProducts = filtered;
     this.applySort();
   }
 
-  private applySort(): void {
+  applySort(): void {
     this.filteredProducts.sort((a, b) => {
-      let valueA: any = a[this.sortBy as keyof Product];
-      let valueB: any = b[this.sortBy as keyof Product];
+      let valueA: any = a[this.sortBy as keyof ProductResponse];
+      let valueB: any = b[this.sortBy as keyof ProductResponse];
 
-      if (this.sortBy === "createdAt" || this.sortBy === "updatedAt") {
-        valueA = new Date(valueA).getTime();
-        valueB = new Date(valueB).getTime();
-      } else if (typeof valueA === "string") {
+      if (typeof valueA === "string") {
         valueA = valueA.toLowerCase();
         valueB = valueB.toLowerCase();
       }
@@ -177,30 +155,71 @@ export class MyProductsComponent implements OnInit {
     });
   }
 
-  getStatusClass(status: string): string {
-    switch (status) {
-      case "active":
-        return "status-active";
-      case "inactive":
-        return "status-inactive";
-      case "out_of_stock":
-        return "status-out-of-stock";
-      default:
-        return "";
-    }
+  getStatusClass(quantity: number): string {
+    if (quantity === 0) return "out-of-stock";
+    if (quantity <= 10) return "low-stock";
+    return "active";
   }
 
-  getStatusIcon(status: string): string {
-    switch (status) {
-      case "active":
-        return "✅";
-      case "inactive":
-        return "⏸️";
-      case "out_of_stock":
-        return "❌";
-      default:
-        return "❓";
+  getStatusLabel(quantity: number): string {
+    if (quantity === 0) return "Out of Stock";
+    if (quantity <= 10) return "Low Stock";
+    return "Active";
+  }
+
+  getStockClass(quantity: number): string {
+    if (quantity === 0) return "out-of-stock";
+    if (quantity <= 10) return "low-stock";
+    return "in-stock";
+  }
+
+  getProductImage(product: ProductResponse): string {
+    if (product.images && product.images.length > 0) {
+      return product.images[0].imageUrl;
     }
+    return "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=300&fit=crop";
+  }
+
+  onImageError(event: any): void {
+    event.target.src =
+      "https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=300&h=300&fit=crop";
+  }
+
+  truncateDescription(description: string, length: number = 60): string {
+    return description.length > length
+      ? description.substring(0, length) + "..."
+      : description;
+  }
+
+  trackByProductId(index: number, product: ProductResponse): string {
+    return product.id;
+  }
+
+  setViewMode(mode: "grid" | "list"): void {
+    this.viewMode = mode;
+  }
+
+  hasActiveFilters(): boolean {
+    return this.searchTerm !== "" || this.selectedStatus !== "all";
+  }
+
+  clearAllFilters(): void {
+    this.searchTerm = "";
+    this.selectedStatus = "all";
+    this.applyFilters();
+  }
+
+  getStartIndex(): number {
+    return this.filteredProducts.length > 0 ? 1 : 0;
+  }
+
+  getEndIndex(): number {
+    return this.filteredProducts.length;
+  }
+
+  viewProduct(productId: string): void {
+    // Navigate to product detail page
+    window.open(`/products/${productId}`, "_blank");
   }
 
   formatCurrency(amount: number | string): string {
@@ -214,51 +233,73 @@ export class MyProductsComponent implements OnInit {
     }).format(numericAmount);
   }
 
-  formatDate(date: Date): string {
-    return new Intl.DateTimeFormat("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    }).format(date);
-  }
-
   editProduct(productId: string): void {
-    // TODO: Navigate to edit product page
-    console.log("Edit product:", productId);
+    this.router.navigate(["/seller/edit-product", productId]);
   }
 
   deleteProduct(productId: string): void {
-    // TODO: Implement delete confirmation and API call
-    if (confirm("Are you sure you want to delete this product?")) {
-      this.products = this.products.filter((p) => p.id !== productId);
-      this.applyFilters();
-    }
+    const product = this.products.find((p) => p.id === productId);
+    const productName = product ? product.name : "this product";
+
+    this.productToDelete = productId;
+    this.confirmModalData = {
+      title: "Delete Product",
+      message: `Are you sure you want to delete "${productName}"? This action cannot be undone and will permanently remove the product from your store.`,
+      confirmText: "Delete",
+      cancelText: "Cancel",
+      type: "danger",
+    };
+    this.showConfirmModal = true;
   }
 
-  toggleProductStatus(productId: string): void {
-    // TODO: Implement API call to toggle status
+  onConfirmDelete(): void {
+    if (!this.productToDelete) return;
+
+    this.isDeleting = true;
+    const productId = this.productToDelete;
     const product = this.products.find((p) => p.id === productId);
-    if (product) {
-      product.status = product.status === "active" ? "inactive" : "active";
-      product.updatedAt = new Date();
-      this.applyFilters();
-    }
+    const productName = product ? product.name : "product";
+
+    this.sellerService.deleteProduct(productId).subscribe({
+      next: () => {
+        // Remove product from local array
+        this.products = this.products.filter((p) => p.id !== productId);
+        this.applyFilters();
+
+        // Close modal and reset state
+        this.closeConfirmModal();
+
+        console.log("Product deleted successfully:", productId);
+      },
+      error: (error) => {
+        console.error("Error deleting product:", error);
+
+        // More detailed error handling
+        if (error.status === 404) {
+          // Remove from local array if it doesn't exist on server
+          this.products = this.products.filter((p) => p.id !== productId);
+          this.applyFilters();
+        }
+
+        // Close modal and reset state
+        this.closeConfirmModal();
+      },
+    });
   }
 
-  duplicateProduct(productId: string): void {
-    // TODO: Implement product duplication
-    const product = this.products.find((p) => p.id === productId);
-    if (product) {
-      const duplicated = {
-        ...product,
-        id: Date.now().toString(),
-        name: `${product.name} (Copy)`,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-      this.products.unshift(duplicated);
-      this.applyFilters();
-    }
+  onCancelDelete(): void {
+    this.closeConfirmModal();
+  }
+
+  private closeConfirmModal(): void {
+    this.showConfirmModal = false;
+    this.isDeleting = false;
+    this.productToDelete = null;
+    this.confirmModalData = {
+      title: "",
+      message: "",
+      type: "danger",
+    };
   }
 
   get totalProducts(): number {
@@ -266,10 +307,15 @@ export class MyProductsComponent implements OnInit {
   }
 
   get activeProducts(): number {
-    return this.products.filter((p) => p.status === "active").length;
+    return this.products.filter((p) => p.quantity > 0).length;
+  }
+
+  get inactiveProducts(): number {
+    return this.products.filter((p) => p.quantity > 0 && p.quantity <= 10)
+      .length;
   }
 
   get outOfStockProducts(): number {
-    return this.products.filter((p) => p.status === "out_of_stock").length;
+    return this.products.filter((p) => p.quantity === 0).length;
   }
 }

@@ -40,17 +40,52 @@ export class SignInComponent {
           next: (loginResponse: LoginResponse) => {
             this.authService.setToken(loginResponse.token);
 
-            // Store user data for navbar
-            const userData: User = {
-              id: loginResponse.email, // Using email as ID for now
-              email: loginResponse.email,
-              role: loginResponse.role.includes("SELLER")
-                ? ("SELLER" as const)
-                : ("CLIENT" as const),
-            };
-            localStorage.setItem("currentUser", JSON.stringify(userData));
+            // Fetch complete user data from backend
+            this.authService.getCurrentUser().subscribe({
+              next: (userResponse) => {
+                const userData: User = {
+                  id: userResponse.id || userResponse.email,
+                  email: userResponse.email,
+                  role:
+                    userResponse.role === "SELLER" ||
+                    userResponse.role?.includes("SELLER")
+                      ? ("SELLER" as const)
+                      : ("CLIENT" as const),
+                  name: userResponse.name,
+                };
+                localStorage.setItem("currentUser", JSON.stringify(userData));
 
-            this.router.navigate(["/"]).then();
+                // Dispatch custom event to notify navbar of auth state change
+                window.dispatchEvent(
+                  new CustomEvent("authStateChanged", {
+                    detail: { loggedIn: true, user: userData },
+                  }),
+                );
+
+                this.router.navigate(["/"]).then();
+              },
+              error: (err) => {
+                console.warn("Failed to fetch user details after login:", err);
+                // Fallback to basic user data from login response
+                const userData: User = {
+                  id: loginResponse.email,
+                  email: loginResponse.email,
+                  role: loginResponse.role.includes("SELLER")
+                    ? ("SELLER" as const)
+                    : ("CLIENT" as const),
+                };
+                localStorage.setItem("currentUser", JSON.stringify(userData));
+
+                // Dispatch custom event even with basic data
+                window.dispatchEvent(
+                  new CustomEvent("authStateChanged", {
+                    detail: { loggedIn: true, user: userData },
+                  }),
+                );
+
+                this.router.navigate(["/"]).then();
+              },
+            });
           },
           error: (err) => {
             this.error_message = err;

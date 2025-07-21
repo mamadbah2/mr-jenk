@@ -33,10 +33,6 @@
               <!-- Seller Specific Navigation -->
               <ng-container *ngIf="isSeller">
                 <div class="dropdown-divider"></div>
-                <a routerLink="/seller/dashboard" class="dropdown-item" (click)="closeDropdown()">
-                  <lucide-icon [img]="BarChart3" class="dropdown-icon"></lucide-icon>
-                  Dashboard
-                </a>
                 <a routerLink="/seller/my-products" class="dropdown-item" (click)="closeDropdown()">
                   <lucide-icon [img]="Package" class="dropdown-icon"></lucide-icon>
                   My Products
@@ -87,13 +83,6 @@
 
           <!-- Seller Specific Navigation in Mobile -->
           <ng-container *ngIf="isSeller">
-            <a routerLink="/seller/dashboard"
-               routerLinkActive="active"
-               class="mobile-nav-link"
-               (click)="navigateToSellerDashboard()">
-              <lucide-icon [img]="BarChart3" class="nav-icon"></lucide-icon>
-              <span>Dashboard</span>
-            </a>
             <a routerLink="/seller/my-products"
                routerLinkActive="active"
                class="mobile-nav-link"

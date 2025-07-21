@@ -5,9 +5,10 @@ import {
   HttpErrorResponse,
 } from "@angular/common/http";
 import { Observable, throwError } from "rxjs";
-import { catchError } from "rxjs/operators";
+import { catchError, map } from "rxjs/operators";
 import { environment } from "../../../../environments/environment";
 import { AuthService } from "../../../auth/services/auth.service";
+import { JwtService } from "../../../shared/services/jwt.service";
 
 export interface CreateProductRequest {
   name: string;
@@ -40,6 +41,7 @@ export class SellerService {
   constructor(
     private http: HttpClient,
     private authService: AuthService,
+    private jwtService: JwtService,
   ) {}
 
   createProduct(
@@ -91,14 +93,32 @@ export class SellerService {
       return throwError(() => new Error("No authentication token available"));
     }
 
+    // Decode JWT to get userId
+    const currentUserId = this.jwtService.getUserId(token);
+
+    if (!currentUserId) {
+      return throwError(() => new Error("User ID not found in token"));
+    }
+
+    if (!this.jwtService.isTokenValid(token)) {
+      return throwError(
+        () => new Error("Invalid or expired authentication token"),
+      );
+    }
+
     const headers = new HttpHeaders({
       Authorization: `Bearer ${token}`,
       Accept: "application/json",
     });
 
-    return this.http
-      .get<ProductResponse[]>(`${this.apiUrl}/my-products`, { headers })
-      .pipe(catchError(this.handleError));
+    // Get all products and filter by userId on the frontend
+    return this.http.get<ProductResponse[]>(this.apiUrl, { headers }).pipe(
+      catchError(this.handleError),
+      // Filter products to only return those belonging to the current user
+      map((products: ProductResponse[]) =>
+        products.filter((product) => product.userId === currentUserId),
+      ),
+    );
   }
 
   updateProduct(
@@ -171,5 +191,9 @@ export class SellerService {
 
   getToken(): string | null {
     return this.authService.getToken();
+  }
+
+  getUserId(token: string): string | null {
+    return this.jwtService.getUserId(token);
   }
 }

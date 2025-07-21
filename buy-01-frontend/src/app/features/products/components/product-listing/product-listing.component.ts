@@ -4,6 +4,7 @@ import { ProductModels } from "../../models/product.models";
 import { RouterLink } from "@angular/router";
 import { AuthService } from "../../../../auth/services/auth.service";
 import { CommonModule } from "@angular/common";
+import { JwtService } from "../../../../shared/services/jwt.service";
 
 @Component({
   selector: "app-product-listing",
@@ -13,11 +14,24 @@ import { CommonModule } from "@angular/common";
 })
 export class ProductListingComponent implements OnInit {
   allProducts: ProductModels[] | null = null;
+  filteredProducts: ProductModels[] | null = null;
   currentUser: any = null;
   isLoading = false;
+  selectedSort: string = "";
+  searchTerm: string = "";
 
   private productService = inject(ProductService);
   private authService = inject(AuthService);
+  private jwtService = inject(JwtService);
+
+  // Helper methods for template
+  getQuantityAsNumber(quantity: string): number {
+    return Number(quantity) || 0;
+  }
+
+  getPriceAsNumber(price: string): number {
+    return Number(price) || 0;
+  }
 
   ngOnInit() {
     this.checkUserStatus();
@@ -26,15 +40,11 @@ export class ProductListingComponent implements OnInit {
 
   private checkUserStatus() {
     if (this.authService.isLoggedIn()) {
-      const userData = localStorage.getItem("access_token");
-      if (userData) {
-        try {
-          const payload = userData.split(".")[1]; // Extract the payload part
-          const decodedPayload = atob(payload); // Decode Base64
-          this.currentUser = JSON.parse(decodedPayload); // Parse JSON
-        } catch (error) {
-          console.error("Error parsing user data:", error);
-          this.currentUser = null;
+      const token = this.authService.getToken();
+      if (token) {
+        this.currentUser = this.jwtService.decodeToken(token);
+        if (!this.currentUser) {
+          console.error("Error parsing user data");
         }
       }
     }
@@ -46,14 +56,15 @@ export class ProductListingComponent implements OnInit {
       next: (value) => {
         console.log("Products loaded successfully:");
         this.allProducts = value;
+        this.filteredProducts = value;
         this.isLoading = false;
         console.log(value);
       },
       error: (err) => {
         console.error("Error loading products:", err);
         this.isLoading = false;
-        // You might want to show a user-friendly error message here
         this.allProducts = [];
+        this.filteredProducts = [];
       },
     });
   }
@@ -119,16 +130,16 @@ export class ProductListingComponent implements OnInit {
     console.log(`Filtering by category: ${category}`);
   }
 
-  sortProducts(sortBy: "name" | "price" | "date") {
-    if (!this.allProducts) return;
+  sortProducts(sortBy: "name" | "price") {
+    if (!this.filteredProducts) return;
 
-    this.allProducts.sort((a, b) => {
+    this.selectedSort = sortBy;
+    this.filteredProducts.sort((a, b) => {
       switch (sortBy) {
         case "name":
           return a.name.localeCompare(b.name);
         case "price":
           return Number(a.price) - Number(b.price);
-
         default:
           return 0;
       }
@@ -138,6 +149,47 @@ export class ProductListingComponent implements OnInit {
   // Method to refresh products
   refreshProducts() {
     this.allProducts = null;
+    this.filteredProducts = null;
+    this.selectedSort = "";
+    this.searchTerm = "";
     this.loadProducts();
+  }
+
+  // Search functionality
+  onSearch(term: string) {
+    this.searchTerm = term.toLowerCase();
+    this.filterProducts();
+  }
+
+  private filterProducts() {
+    if (!this.allProducts) return;
+
+    if (!this.searchTerm) {
+      this.filteredProducts = [...this.allProducts];
+    } else {
+      this.filteredProducts = this.allProducts.filter(
+        (product) =>
+          product.name.toLowerCase().includes(this.searchTerm) ||
+          (product.description &&
+            product.description.toLowerCase().includes(this.searchTerm)),
+      );
+    }
+
+    // Reapply sort if one was selected
+    if (this.selectedSort) {
+      this.sortProducts(this.selectedSort as "name" | "price");
+    }
+  }
+
+  // Track by function for better performance
+  trackByProductId(index: number, product: ProductModels): string {
+    return product.id;
+  }
+
+  // Check if product is new (created within last 30 days)
+  isNewProduct(product: ProductModels): boolean {
+    // This would typically check a createdAt date
+    // For now, return false as we don't have that field
+    return false;
   }
 }

@@ -1,67 +1,275 @@
+<div class="product-detail-container">
+  <!-- Loading State -->
+  <div class="loading-state" *ngIf="!product">
+    <div class="loading-spinner"></div>
+    <p class="loading-text">Loading product details...</p>
+  </div>
 
+  <!-- Product Detail Content -->
+  <div *ngIf="product">
+    <!-- Breadcrumb -->
+    <nav class="breadcrumb" aria-label="Breadcrumb">
+      <a routerLink="/products" class="breadcrumb-link">Products</a>
+      <span class="breadcrumb-separator">›</span>
+      <span class="breadcrumb-current">{{ product.name }}</span>
+    </nav>
 
-<main class="product-detail-page">
-  <div class="container">
-    <div class="product-detail-card">
+    <!-- Main Product Section -->
+    <div class="product-main">
+      <!-- Product Gallery -->
       <div class="product-gallery">
         <div class="main-image-container">
-          <img src="{{product!.images[0].imageUrl}}" alt="Image principale du produit" class="main-image" id="mainProductImage">
+          <img
+            [src]="selectedImage"
+            [alt]="product.name"
+            class="main-image"
+            (error)="onImageError($event)"
+          />
+          <div class="image-zoom-hint" *ngIf="selectedImage">
+            <span class="zoom-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+            </span>
+            Click to zoom
+          </div>
         </div>
-        <div class="thumbnail-container">
-          @for (image of product!.images; track image.id) {
-            <img src="{{image.imageUrl}}" alt="Miniature {{image.id}}" class="thumbnail" onclick="changeMainImage(this)">
-          }
+
+        <!-- Thumbnail Gallery -->
+        <div class="thumbnail-gallery" *ngIf="product.images && product.images.length > 1">
+          <button
+            *ngFor="let image of product.images; let i = index"
+            class="thumbnail-btn"
+            [class.active]="selectedImage === image.imageUrl"
+            (click)="selectImage(image.imageUrl)"
+          >
+            <img
+              [src]="image.imageUrl"
+              [alt]="'Product image ' + (i + 1)"
+              class="thumbnail-image"
+              (error)="onImageError($event)"
+            />
+          </button>
         </div>
       </div>
 
+      <!-- Product Info -->
       <div class="product-info">
-        <h2 class="product-title">{{product?.name}}</h2>
-        <p class="product-price">{{product?.price}} €</p>
-        <p class="product-description">
-          {{product?.description}}
-        </p>
-        <div class="product-meta">
-          <p><strong>Quantité disponible:</strong> {{product?.quantity}}</p>
-          <p><strong>Catégorie:</strong> All Type</p>
+        <div class="product-header">
+          <h1 class="product-title">{{ product.name }}</h1>
+          <div class="product-badges">
+            <span class="availability-badge" [class.in-stock]="getQuantityAsNumber(product.quantity) > 0" [class.out-of-stock]="getQuantityAsNumber(product.quantity) === 0">
+              {{ getQuantityAsNumber(product.quantity) > 0 ? 'In Stock' : 'Out of Stock' }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Price Section -->
+        <div class="price-section">
+          <div class="current-price">
+            <span class="price-amount">{{ formatPrice(product.price) }}</span>
+            <span class="currency">XOF</span>
+          </div>
+        </div>
+
+        <!-- Product Description -->
+        <div class="product-description" *ngIf="product.description">
+          <h3 class="section-title">Description</h3>
+          <p class="description-text">{{ product.description }}</p>
+        </div>
+
+        <!-- Product Details -->
+        <div class="product-details">
+          <h3 class="section-title">Product Details</h3>
+          <div class="details-grid">
+            <div class="detail-item">
+              <span class="detail-label">Availability:</span>
+              <span class="detail-value" [ngClass]="getStockClass(getQuantityAsNumber(product.quantity))">
+                {{ getQuantityAsNumber(product.quantity) }} units available
+              </span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Category:</span>
+              <span class="detail-value">General</span>
+            </div>
+            <div class="detail-item">
+              <span class="detail-label">Product ID:</span>
+              <span class="detail-value">{{ product.id }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-section">
+          <div class="quantity-selector" *ngIf="getQuantityAsNumber(product.quantity) > 0">
+            <label class="quantity-label">Quantity:</label>
+            <div class="quantity-controls">
+              <button class="quantity-btn" (click)="decreaseQuantity()" [disabled]="selectedQuantity <= 1">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </button>
+              <span class="quantity-display">{{ selectedQuantity }}</span>
+              <button class="quantity-btn" (click)="increaseQuantity()" [disabled]="selectedQuantity >= getQuantityAsNumber(product.quantity)">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="12" y1="5" x2="12" y2="19"></line>
+                  <line x1="5" y1="12" x2="19" y2="12"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="action-buttons">
+            <button
+              class="btn btn-primary add-to-cart"
+              [disabled]="getQuantityAsNumber(product.quantity) === 0 || isGuest"
+              (click)="addToCart()"
+            >
+              <span class="btn-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="8" cy="21" r="1"></circle>
+                  <circle cx="19" cy="21" r="1"></circle>
+                  <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path>
+                </svg>
+              </span>
+              {{ getQuantityAsNumber(product.quantity) === 0 ? 'Out of Stock' : 'Add to Cart' }}
+            </button>
+
+            <button class="btn btn-secondary wishlist" (click)="addToWishlist()">
+              <span class="btn-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+              </span>
+              Add to Wishlist
+            </button>
+
+            <button class="btn btn-outline share" (click)="shareProduct()">
+              <span class="btn-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path>
+                  <polyline points="16,6 12,2 8,6"></polyline>
+                  <line x1="12" y1="2" x2="12" y2="15"></line>
+                </svg>
+              </span>
+              Share
+            </button>
+          </div>
+
+          <!-- Guest Notice -->
+          <div class="guest-notice" *ngIf="isGuest">
+            <p class="notice-text">
+              <span class="notice-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <line x1="12" y1="16" x2="12" y2="12"></line>
+                  <line x1="12" y1="8" x2="12.01" y2="8"></line>
+                </svg>
+              </span>
+              Please <a routerLink="/auth" class="auth-link">sign in</a> to add items to your cart.
+            </p>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="seller-info-section">
-      <h3 class="section-title">Informations sur le Vendeur</h3>
-      <div class="seller-card">
-        <div class="seller-avatar-container">
-          <img src="https://via.placeholder.com/80x80?text=Avatar" alt="Avatar du vendeur" class="seller-avatar">
-        </div>
-        <div class="seller-details">
-          <p class="seller-name"><strong>Nom du Vendeur</strong></p>
-          <p class="seller-email">Email: <a href="mailto:vendeur@example.com">vendeurexample.com</a></p>
-          <p class="seller-location">Localisation: Ville, Pays</p>
-          <p class="seller-join-date">Membre depuis: Janvier 2023</p>
-          <button class="contact-seller-button">Contacter le vendeur</button>
+    <!-- Related Products -->
+    <div class="related-section" *ngIf="relatedProducts && relatedProducts.length > 0">
+      <div class="section-header">
+        <h2 class="section-title">You Might Also Like</h2>
+        <a routerLink="/products" class="view-all-link">View All</a>
+      </div>
+
+      <div class="related-products-grid">
+        <div class="related-product-card" *ngFor="let relatedProduct of relatedProducts">
+          <a [routerLink]="['/products', relatedProduct.id]" class="product-link">
+            <div class="related-image-container">
+              <img
+                [src]="getProductImage(relatedProduct)"
+                [alt]="relatedProduct.name"
+                class="related-image"
+                (error)="onImageError($event)"
+              />
+            </div>
+            <div class="related-info">
+              <h4 class="related-name">{{ relatedProduct.name }}</h4>
+              <div class="related-price">
+                <span class="price">{{ formatPrice(relatedProduct.price) }}</span>
+                <span class="currency">XOF</span>
+              </div>
+            </div>
+          </a>
         </div>
       </div>
+    </div>
+
+    <!-- Product Reviews Section -->
+    <div class="reviews-section">
+      <div class="section-header">
+        <h2 class="section-title">Customer Reviews</h2>
+        <div class="reviews-summary">
+          <div class="overall-rating">
+            <div class="rating-stars large">
+              <span class="star filled">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1">
+                  <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+                </svg>
+              </span>
+              <span class="star filled">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1">
+                  <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+                </svg>
+              </span>
+              <span class="star filled">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1">
+                  <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+                </svg>
+              </span>
+              <span class="star filled">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1">
+                  <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+                </svg>
+              </span>
+              <span class="star">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"></polygon>
+                </svg>
+              </span>
+            </div>
+            <span class="rating-value">4.2 out of 5</span>
+          </div>
+          <span class="review-count">Based on 28 reviews</span>
+        </div>
+      </div>
+
+      <div class="reviews-placeholder">
+        <div class="placeholder-icon">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+          </svg>
+        </div>
+        <h3 class="placeholder-title">Reviews Coming Soon</h3>
+        <p class="placeholder-text">
+          Customer reviews and ratings will be available soon. Be the first to share your experience with this product!
+        </p>
+        <button class="btn btn-outline" disabled>
+          Write a Review
+        </button>
+      </div>
+    </div>
+
+    <!-- Back to Products -->
+    <div class="navigation-section">
+      <button class="btn btn-secondary back-btn" (click)="goBack()">
+        <span class="btn-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="19" y1="12" x2="5" y2="12"></line>
+            <polyline points="12,19 5,12 12,5"></polyline>
+          </svg>
+        </span>
+        Back to Products
+      </button>
     </div>
   </div>
-</main>
-
-
-
-<script>
-  function changeMainImage(thumbnail) {
-    const mainImage = document.getElementById('mainProductImage');
-    mainImage.src = thumbnail.src.replace('100x70', '600x400').replace('Thumb', 'Image Principale'); // Adaptez ceci à vos vraies URLs d'images
-    // Optionnel: ajouter/retirer une classe 'active' pour le thumbnail sélectionné
-    document.querySelectorAll('.thumbnail').forEach(img => img.classList.remove('active'));
-    thumbnail.classList.add('active');
-  }
-
-  // Initialiser l'image principale avec la première miniature active au chargement
-  document.addEventListener('DOMContentLoaded', () => {
-    const firstThumbnail = document.querySelector('.thumbnail');
-    if (firstThumbnail) {
-      firstThumbnail.classList.add('active');
-      changeMainImage(firstThumbnail); // S'assure que la grande image est la première miniature
-    }
-  });
-</script>
+</div>

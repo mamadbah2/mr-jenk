@@ -4,9 +4,9 @@ import { ProductListingComponent } from "./features/products/components/product-
 import { authGuard } from "./auth/guards/auth.guard";
 import { sellerGuard } from "./auth/guards/seller.guard";
 import { ProductDetailsComponent } from "./features/products/components/product-details/product-details.component";
-import { SellerDashboardComponent } from "./features/seller/components/dashboard/seller-dashboard.component";
 import { MyProductsComponent } from "./features/seller/components/my-products/my-products.component";
 import { CreateProductComponent } from "./features/seller/components/create-product/create-product.component";
+import { EditProductComponent } from "./features/seller/components/edit-product/edit-product.component";
 
 export const routes: Routes = [
   { path: "auth", component: SignComponent },
@@ -35,11 +35,7 @@ export const routes: Routes = [
   //     ),
   //   canActivate: [authGuard], // Only logged-in users
   // },
-  {
-    path: "seller/dashboard",
-    component: SellerDashboardComponent,
-    canActivate: [sellerGuard], // Only sellers
-  },
+
   {
     path: "seller/my-products",
     component: MyProductsComponent,
@@ -48,6 +44,11 @@ export const routes: Routes = [
   {
     path: "seller/create-product",
     component: CreateProductComponent,
+    canActivate: [sellerGuard], // Only sellers
+  },
+  {
+    path: "seller/edit-product/:id",
+    component: EditProductComponent,
     canActivate: [sellerGuard], // Only sellers
   },
   { path: "", redirectTo: "products", pathMatch: "full" },
