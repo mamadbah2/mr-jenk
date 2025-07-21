@@ -12,12 +12,14 @@ import { Router } from "@angular/router";
 export class AuthService {
   private apiUrl = "http://localhost:8080";
   private isAuthenticate: boolean = false;
+  private tokenCheckInterval: any;
 
   constructor(
     private httpClient: HttpClient,
     private router: Router,
   ) {
-    this.isAuthenticate = !!this.getToken();
+    this.isAuthenticate = this.validateToken();
+    this.startTokenValidation();
   }
 
   login(credentials: { email: string; password: string }): Observable<any> {
@@ -70,11 +72,19 @@ export class AuthService {
   setToken(token: string) {
     localStorage.setItem("access_token", token);
     this.isAuthenticate = true;
+    this.startTokenValidation();
   }
 
   logout(): void {
-    localStorage.removeItem("access_token"); // <-- Supprime le token ici
-    localStorage.removeItem("currentUser"); // Clear user data
+    // Stop token validation
+    this.stopTokenValidation();
+
+    // Clear all authentication data
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("currentUser");
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("refreshToken");
+    sessionStorage.clear();
     this.isAuthenticate = false;
 
     // Dispatch custom event to notify of logout
@@ -84,13 +94,12 @@ export class AuthService {
       }),
     );
 
-    this.router.navigate(["/auth"]);
+    // Clear any cached data
+    window.dispatchEvent(new Event("storage"));
   }
 
   isLoggedIn() {
-    const token = localStorage.getItem("access_token");
-    this.isAuthenticate = !!token;
-    return this.isAuthenticate;
+    return this.validateToken();
   }
 
   getToken(): string | null {
@@ -141,5 +150,82 @@ export class AuthService {
         detail: { refresh: true },
       }),
     );
+  }
+
+  private validateToken(): boolean {
+    const token = this.getToken();
+    if (!token) {
+      this.isAuthenticate = false;
+      return false;
+    }
+
+    try {
+      const payload = this.decodeJwtToken(token);
+      if (!payload || !payload.exp) {
+        this.handleInvalidToken();
+        return false;
+      }
+
+      // Check if token is expired (exp is in seconds, Date.now() is in milliseconds)
+      const currentTime = Math.floor(Date.now() / 1000);
+      if (payload.exp <= currentTime) {
+        console.log("Token expired, logging out automatically");
+        this.handleInvalidToken();
+        return false;
+      }
+
+      this.isAuthenticate = true;
+      return true;
+    } catch (error) {
+      console.error("Token validation error:", error);
+      this.handleInvalidToken();
+      return false;
+    }
+  }
+
+  private handleInvalidToken(): void {
+    console.log(
+      "Invalid or expired token detected, clearing authentication state",
+    );
+    this.isAuthenticate = false;
+
+    // Clear authentication data
+    localStorage.removeItem("access_token");
+    localStorage.removeItem("currentUser");
+    localStorage.removeItem("userRole");
+    localStorage.removeItem("refreshToken");
+
+    // Stop token validation
+    this.stopTokenValidation();
+
+    // Notify components of auth state change
+    window.dispatchEvent(
+      new CustomEvent("authStateChanged", {
+        detail: { loggedIn: false, user: null, reason: "token_invalid" },
+      }),
+    );
+
+    // Trigger storage event for cross-tab sync
+    window.dispatchEvent(new Event("storage"));
+  }
+
+  private startTokenValidation(): void {
+    // Stop any existing interval
+    this.stopTokenValidation();
+
+    // Check token validity every 30 seconds
+    this.tokenCheckInterval = setInterval(() => {
+      if (!this.validateToken()) {
+        // Token is invalid, user will be automatically logged out
+        console.log("Periodic token check failed, user logged out");
+      }
+    }, 30000);
+  }
+
+  private stopTokenValidation(): void {
+    if (this.tokenCheckInterval) {
+      clearInterval(this.tokenCheckInterval);
+      this.tokenCheckInterval = null;
+    }
   }
 }

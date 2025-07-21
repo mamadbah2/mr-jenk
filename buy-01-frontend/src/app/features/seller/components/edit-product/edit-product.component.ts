@@ -8,6 +8,7 @@ import {
 } from "@angular/forms";
 import { Router, ActivatedRoute } from "@angular/router";
 import { SellerService, ProductResponse } from "../../services/seller.service";
+import { ToastService } from "../../../../shared/services/toast.service";
 
 @Component({
   selector: "app-edit-product",
@@ -28,11 +29,22 @@ export class EditProductComponent implements OnInit {
   errorMessage = "";
   successMessage = "";
 
+  // File upload restrictions
+  readonly MAX_FILES = 5;
+  readonly MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+  readonly ALLOWED_TYPES = [
+    "image/jpeg",
+    "image/jpg",
+    "image/png",
+    "image/webp",
+  ];
+
   constructor(
     private fb: FormBuilder,
     private sellerService: SellerService,
     private router: Router,
     private route: ActivatedRoute,
+    private toastService: ToastService,
   ) {
     this.editForm = this.fb.group({
       name: ["", [Validators.required, Validators.minLength(3)]],
@@ -104,36 +116,89 @@ export class EditProductComponent implements OnInit {
   onFileSelect(event: any): void {
     const files = Array.from(event.target.files) as File[];
 
-    // Limit to 5 images total (existing + new)
-    const maxNewImages = 5 - this.existingImages.length;
+    // Check total image limit
+    const maxNewImages = this.MAX_FILES - this.existingImages.length;
     if (files.length > maxNewImages) {
-      this.errorMessage = `You can only add ${maxNewImages} more image(s). You already have ${this.existingImages.length} existing image(s).`;
+      this.toastService.error(
+        "Too Many Files",
+        `You can only add ${maxNewImages} more image(s). You already have ${this.existingImages.length} existing image(s).`,
+      );
+      event.target.value = "";
       return;
     }
 
-    this.selectedFiles = files;
-    this.imagePreviewUrls = [];
+    const validFiles: File[] = [];
+    const rejectedFiles: string[] = [];
 
     files.forEach((file) => {
-      if (file.type.startsWith("image/")) {
+      // Check file type
+      if (!this.ALLOWED_TYPES.includes(file.type)) {
+        this.toastService.fileTypeError(file.name, this.ALLOWED_TYPES);
+        rejectedFiles.push(file.name);
+        return;
+      }
+
+      // Check file size
+      if (file.size > this.MAX_FILE_SIZE) {
+        this.toastService.fileSizeError(
+          file.name,
+          this.formatFileSize(this.MAX_FILE_SIZE),
+        );
+        rejectedFiles.push(file.name);
+        return;
+      }
+
+      validFiles.push(file);
+    });
+
+    if (validFiles.length > 0) {
+      this.selectedFiles = validFiles;
+      this.imagePreviewUrls = [];
+
+      validFiles.forEach((file) => {
         const reader = new FileReader();
         reader.onload = (e: any) => {
           this.imagePreviewUrls.push(e.target.result);
         };
         reader.readAsDataURL(file);
-      }
-    });
+      });
 
-    this.errorMessage = "";
+      // Show success message
+      if (validFiles.length === 1) {
+        this.toastService.success(
+          "File Added",
+          `"${validFiles[0].name}" has been added successfully.`,
+        );
+      } else {
+        this.toastService.success(
+          "Files Added",
+          `${validFiles.length} files have been added successfully.`,
+        );
+      }
+
+      this.errorMessage = "";
+    }
+
+    // Reset the input
+    event.target.value = "";
   }
 
   removeNewImage(index: number): void {
+    const removedFile = this.selectedFiles[index];
     this.selectedFiles.splice(index, 1);
     this.imagePreviewUrls.splice(index, 1);
+
+    this.toastService.info(
+      "File Removed",
+      `"${removedFile.name}" has been removed.`,
+    );
   }
 
   removeExistingImage(index: number): void {
+    const removedImage = this.existingImages[index];
     this.existingImages.splice(index, 1);
+
+    this.toastService.info("Image Removed", "Existing image has been removed.");
   }
 
   onSubmit(): void {
@@ -153,7 +218,7 @@ export class EditProductComponent implements OnInit {
 
       const formData = this.editForm.value;
 
-      // Prepare update data
+      // Prepare update data using the correct interface
       const updateData: any = {
         name: formData.name,
         description: formData.description,
@@ -180,8 +245,8 @@ export class EditProductComponent implements OnInit {
 
       this.sellerService.updateProduct(this.productId, updateData).subscribe({
         next: (response) => {
-          this.successMessage = "Product updated successfully!";
           this.isSubmitting = false;
+          this.toastService.productUpdated(updateData.name);
 
           // Clear selected files since they've been uploaded
           this.selectedFiles = [];
@@ -190,21 +255,45 @@ export class EditProductComponent implements OnInit {
           // Refresh product data to show updated images
           this.refreshProductData();
 
-          // Redirect to my products after 3 seconds
+          // Small delay to show the success toast before navigation
           setTimeout(() => {
             this.router.navigate(["/seller/my-products"]);
-          }, 3000);
+          }, 1000);
         },
         error: (error) => {
           console.error("Error updating product:", error);
-          this.errorMessage =
-            error.error?.message ||
-            "Failed to update product. Please try again.";
           this.isSubmitting = false;
+
+          if (error.status === 401) {
+            this.toastService.authError();
+          } else if (error.status === 400) {
+            const message =
+              error.error?.message ||
+              "Invalid product data. Please check your inputs.";
+            this.toastService.error("Validation Error", message);
+          } else if (error.status === 413) {
+            this.toastService.error(
+              "Files Too Large",
+              "The uploaded files are too large. Please use smaller images.",
+            );
+          } else if (error.status === 0) {
+            this.toastService.networkError();
+          } else if (error.status >= 500) {
+            this.toastService.serverError();
+          } else {
+            const message =
+              error.error?.message ||
+              "Failed to update product. Please try again.";
+            this.toastService.error("Update Failed", message);
+          }
         },
       });
     } else {
       this.markFormGroupTouched();
+      this.toastService.error(
+        "Form Invalid",
+        "Please fill in all required fields correctly.",
+      );
     }
   }
 
@@ -263,10 +352,6 @@ export class EditProductComponent implements OnInit {
     return this.existingImages.length + this.selectedFiles.length;
   }
 
-  canAddMoreImages(): boolean {
-    return this.getTotalImages() < 5;
-  }
-
   hasMinimumImages(): boolean {
     return this.getTotalImages() > 0;
   }
@@ -292,5 +377,25 @@ export class EditProductComponent implements OnInit {
         console.error("Error refreshing product data:", error);
       },
     });
+  }
+
+  private formatFileSize(bytes: number): string {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  }
+
+  get canAddMoreImages(): boolean {
+    return (
+      this.existingImages.length + this.selectedFiles.length < this.MAX_FILES
+    );
+  }
+
+  get remainingImageSlots(): number {
+    return (
+      this.MAX_FILES - (this.existingImages.length + this.selectedFiles.length)
+    );
   }
 }

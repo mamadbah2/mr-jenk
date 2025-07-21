@@ -36,6 +36,7 @@ export class NavbarComponent implements OnInit, OnDestroy {
   private storageListener: ((event: StorageEvent) => void) | null = null;
   private routerSubscription: Subscription | null = null;
   private authStateListener: ((event: CustomEvent) => void) | null = null;
+  private authCheckInterval: any;
 
   // Lucide icons
   readonly ShoppingCart = ShoppingCart;
@@ -62,6 +63,9 @@ export class NavbarComponent implements OnInit, OnDestroy {
       this.cdr.detectChanges();
     }, 100);
 
+    // Start periodic auth status check
+    this.startPeriodicAuthCheck();
+
     // Listen for storage changes (when user logs in/out)
     this.storageListener = (event: StorageEvent) => {
       if (event.key === "access_token" || event.key === "currentUser") {
@@ -74,8 +78,23 @@ export class NavbarComponent implements OnInit, OnDestroy {
     // Listen for custom auth state changes
     this.authStateListener = (event: CustomEvent) => {
       console.log("Auth state changed:", event.detail);
-      this.checkAuthStatus();
-      this.cdr.detectChanges();
+
+      // Handle immediate logout for invalid tokens
+      if (
+        event.detail?.reason === "token_invalid" ||
+        event.detail?.loggedIn === false
+      ) {
+        this.currentUser = null;
+        this.cdr.detectChanges();
+
+        // Redirect to products page if not already there
+        if (this.router.url !== "/products") {
+          this.router.navigate(["/products"]);
+        }
+      } else {
+        this.checkAuthStatus();
+        this.cdr.detectChanges();
+      }
     };
     window.addEventListener(
       "authStateChanged",
@@ -104,10 +123,13 @@ export class NavbarComponent implements OnInit, OnDestroy {
     if (this.routerSubscription) {
       this.routerSubscription.unsubscribe();
     }
+    this.stopPeriodicAuthCheck();
   }
 
   private checkAuthStatus(): void {
-    if (this.authService.isLoggedIn()) {
+    const isLoggedIn = this.authService.isLoggedIn();
+
+    if (isLoggedIn) {
       // Try to get user data from localStorage
       const userData = localStorage.getItem("currentUser");
       if (userData) {
@@ -132,9 +154,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
         this.fetchUserFromBackend();
       }
     } else {
+      // User is not logged in - immediately clear state
       if (this.currentUser !== null) {
         this.currentUser = null;
-        console.log("Navbar: User logged out");
+        console.log("Navbar: User logged out - clearing state immediately");
+        this.cdr.detectChanges();
       }
     }
   }
@@ -245,11 +269,16 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   logout(): void {
-    // Use auth service logout
-    this.authService.logout();
+    // Immediately clear user state
     this.currentUser = null;
     this.closeMobileMenu();
     this.closeDropdown();
+
+    // Use auth service logout
+    this.authService.logout();
+
+    // Force immediate UI update
+    this.cdr.detectChanges();
 
     // Dispatch custom event to notify of logout
     window.dispatchEvent(
@@ -258,9 +287,11 @@ export class NavbarComponent implements OnInit, OnDestroy {
       }),
     );
 
-    // Refresh auth status after logout
-    this.checkAuthStatus();
-    this.cdr.detectChanges();
+    // Navigate to home page immediately
+    this.router.navigate(["/products"]).then(() => {
+      // Force page reload to ensure clean state
+      window.location.reload();
+    });
   }
 
   login(): void {
@@ -277,6 +308,41 @@ export class NavbarComponent implements OnInit, OnDestroy {
   }
 
   get isLoggedIn(): boolean {
-    return this.authService.isLoggedIn();
+    const authStatus = this.authService.isLoggedIn();
+    // Double-check: if auth service says not logged in but we still have currentUser, clear it
+    if (!authStatus && this.currentUser) {
+      this.currentUser = null;
+      this.cdr.detectChanges();
+    }
+    return authStatus;
+  }
+
+  private startPeriodicAuthCheck(): void {
+    // Check auth status every 5 seconds to ensure immediate UI updates
+    this.authCheckInterval = setInterval(() => {
+      const wasLoggedIn = this.currentUser !== null;
+      const isCurrentlyLoggedIn = this.authService.isLoggedIn();
+
+      if (wasLoggedIn && !isCurrentlyLoggedIn) {
+        // User was logged in but now is not - immediate logout
+        console.log(
+          "Navbar: Detected authentication loss, updating UI immediately",
+        );
+        this.currentUser = null;
+        this.closeDropdown();
+        this.closeMobileMenu();
+        this.cdr.detectChanges();
+      } else if (!wasLoggedIn && isCurrentlyLoggedIn) {
+        // User just logged in - refresh user data
+        this.checkAuthStatus();
+      }
+    }, 5000);
+  }
+
+  private stopPeriodicAuthCheck(): void {
+    if (this.authCheckInterval) {
+      clearInterval(this.authCheckInterval);
+      this.authCheckInterval = null;
+    }
   }
 }

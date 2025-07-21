@@ -295,6 +295,81 @@
   height: 0.75rem;
 }
 
+/* File Restrictions */
+.file-restrictions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 1rem;
+  background: #f8fafc;
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+}
+
+.restriction-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #64748b;
+}
+
+.restriction-icon {
+  font-size: 1rem;
+}
+
+.restriction-text {
+  font-weight: 500;
+}
+
+/* Upload Status */
+.upload-status {
+  margin-top: 1rem;
+}
+
+.status-message {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.status-message.warning {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #f59e0b;
+}
+
+.status-message.success {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #10b981;
+}
+
+.status-icon {
+  font-size: 1rem;
+}
+
+.status-text {
+  flex: 1;
+}
+
+/* Disabled States */
+.image-upload-area.disabled .upload-label {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #f1f5f9;
+  border-color: #e2e8f0;
+}
+
+.upload-label.disabled {
+  pointer-events: none;
+}
+
 /* Alerts */
 .alert {
   padding: 1rem;

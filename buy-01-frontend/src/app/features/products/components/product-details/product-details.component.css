@@ -612,11 +612,11 @@
 
 /* Related Products */
 .related-section {
-  margin: 2rem 0;
+  margin: 3rem 0;
   background: white;
   border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   border: 1px solid #e5e7eb;
 }
 
@@ -624,96 +624,158 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem 2rem;
-  background: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 2rem 2rem 1rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.section-header .section-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+  font-family: "Poppins", sans-serif;
 }
 
 .view-all-link {
   color: #3b82f6;
   text-decoration: none;
-  font-size: 0.9rem;
-  font-weight: 500;
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  background: rgba(59, 130, 246, 0.1);
 }
 
 .view-all-link:hover {
-  text-decoration: underline;
+  background: #3b82f6;
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
 .related-products-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
   padding: 2rem;
+  background: #fafbfc;
 }
 
 .related-product-card {
+  background: white;
   border: 1px solid #e5e7eb;
   border-radius: 12px;
   overflow: hidden;
-  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  height: 380px;
+  position: relative;
 }
 
 .related-product-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border-color: #d1d5db;
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.15);
+  border-color: #3b82f6;
+}
+
+.related-product-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #3b82f6, #06b6d4);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.related-product-card:hover::before {
+  opacity: 1;
 }
 
 .product-link {
-  display: block;
   text-decoration: none;
+  color: inherit;
+  display: block;
+  height: 100%;
+  transition: all 0.2s ease;
+}
+
+.product-link:hover {
   color: inherit;
 }
 
 .related-image-container {
-  height: 150px;
-  background: #f9fafb;
+  height: 240px;
+  background: #ffffff;
   overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .related-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  transition: transform 0.3s ease;
+  object-fit: contain;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 8px;
 }
 
 .related-product-card:hover .related-image {
-  transform: scale(1.05);
+  transform: scale(1.02);
 }
 
 .related-info {
   padding: 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
 .related-name {
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 600;
   color: #1f2937;
-  margin: 0 0 0.5rem 0;
-  line-height: 1.3;
+  margin: 0 0 0.75rem 0;
+  line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  font-family: "Poppins", sans-serif;
 }
 
 .related-price {
   display: flex;
   align-items: baseline;
   gap: 0.25rem;
+  margin-top: auto;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f3f4f6;
 }
 
 .related-price .price {
-  font-size: 1rem;
+  font-size: 1.125rem;
   font-weight: 700;
-  color: #1f2937;
+  color: #059669;
+  transition: color 0.2s ease;
+}
+
+.related-product-card:hover .related-price .price {
+  color: #047857;
 }
 
 .related-price .currency {
-  font-size: 0.8rem;
+  font-size: 0.875rem;
   color: #6b7280;
+  font-weight: 500;
 }
 
 /* Reviews Section */
@@ -808,7 +870,7 @@
   }
 
   .related-products-grid {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 1rem;
   }
 }
@@ -857,6 +919,15 @@
   .related-products-grid {
     grid-template-columns: repeat(2, 1fr);
     padding: 1.5rem;
+    gap: 1rem;
+  }
+
+  .related-product-card {
+    height: 320px;
+  }
+
+  .related-image-container {
+    height: 180px;
   }
 
   .reviews-summary {
@@ -892,6 +963,15 @@
 
   .related-products-grid {
     grid-template-columns: 1fr;
+    padding: 1rem;
+  }
+
+  .related-product-card {
+    height: 300px;
+  }
+
+  .related-image-container {
+    height: 160px;
   }
 
   .breadcrumb-current {

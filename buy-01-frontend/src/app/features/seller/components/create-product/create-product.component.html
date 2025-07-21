@@ -92,19 +92,40 @@
       <!-- Product Images Section -->
       <div class="form-section">
         <h2 class="section-title">Product Images</h2>
-        <p class="section-description">Upload high-quality images of your product. You can add multiple images.</p>
+        <p class="section-description">Upload high-quality images of your product. You can add up to {{ MAX_FILES }} images.</p>
+
+        <!-- File Restrictions Info -->
+        <div class="file-restrictions">
+          <div class="restriction-item">
+            <span class="restriction-icon">📁</span>
+            <span class="restriction-text">Maximum {{ MAX_FILES }} images</span>
+          </div>
+          <div class="restriction-item">
+            <span class="restriction-icon">📏</span>
+            <span class="restriction-text">Max 5MB per file</span>
+          </div>
+          <div class="restriction-item">
+            <span class="restriction-icon">🖼️</span>
+            <span class="restriction-text">JPEG, PNG, WebP only</span>
+          </div>
+          <div class="restriction-item" *ngIf="selectedImages.length > 0">
+            <span class="restriction-icon">✅</span>
+            <span class="restriction-text">{{ selectedImages.length }}/{{ MAX_FILES }} images selected</span>
+          </div>
+        </div>
 
         <!-- Image Upload Area -->
-        <div class="image-upload-area">
+        <div class="image-upload-area" [class.disabled]="!canAddMoreImages">
           <input
             type="file"
             id="images"
             multiple
             accept="image/jpeg,image/jpg,image/png,image/webp"
             (change)="onImageSelect($event)"
+            [disabled]="!canAddMoreImages"
             class="file-input">
 
-          <label for="images" class="upload-label">
+          <label for="images" class="upload-label" [class.disabled]="!canAddMoreImages">
             <div class="upload-content">
               <lucide-icon [img]="Upload" class="upload-icon"></lucide-icon>
               <div class="upload-text">
@@ -132,9 +153,12 @@
           </div>
         </div>
 
-        <!-- Image Upload Error -->
-        <div class="error-message" *ngIf="selectedImages.length === 0 && submitError && submitError.includes('image')">
-          Please select at least one image for your product.
+        <!-- Upload Status -->
+        <div class="upload-status" *ngIf="selectedImages.length === 0">
+          <div class="status-message warning">
+            <span class="status-icon">⚠️</span>
+            <span class="status-text">At least one image is required</span>
+          </div>
         </div>
       </div>
 

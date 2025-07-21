@@ -1,4 +1,4 @@
-import { Component, OnInit } from "@angular/core";
+import { Component, OnInit, ChangeDetectorRef } from "@angular/core";
 import { CommonModule } from "@angular/common";
 import { RouterModule, Router } from "@angular/router";
 import { FormsModule } from "@angular/forms";
@@ -7,6 +7,7 @@ import {
   ConfirmationModalComponent,
   ConfirmationModalData,
 } from "../../../../shared/components/confirmation-modal/confirmation-modal.component";
+import { ToastService } from "../../../../shared/services/toast.service";
 
 @Component({
   selector: "app-my-products",
@@ -32,18 +33,20 @@ export class MyProductsComponent implements OnInit {
   viewMode: "grid" | "list" = "grid";
 
   // Confirmation modal properties
-  showConfirmModal = false;
+  showConfirmModal: boolean = false;
   confirmModalData: ConfirmationModalData = {
     title: "",
     message: "",
     type: "danger",
   };
-  isDeleting = false;
+  isDeleting: boolean = false;
   productToDelete: string | null = null;
 
   constructor(
     private sellerService: SellerService,
     private router: Router,
+    private toastService: ToastService,
+    private cdr: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
@@ -238,9 +241,14 @@ export class MyProductsComponent implements OnInit {
   }
 
   deleteProduct(productId: string): void {
+    console.log("=== DELETE BUTTON CLICKED ===");
+    console.log("Product ID:", productId);
+    console.log("View Mode:", this.viewMode);
+
     const product = this.products.find((p) => p.id === productId);
     const productName = product ? product.name : "this product";
 
+    console.log("Product found:", product);
     this.productToDelete = productId;
     this.confirmModalData = {
       title: "Delete Product",
@@ -249,36 +257,63 @@ export class MyProductsComponent implements OnInit {
       cancelText: "Cancel",
       type: "danger",
     };
+
     this.showConfirmModal = true;
+    this.cdr.detectChanges();
   }
 
   onConfirmDelete(): void {
-    if (!this.productToDelete) return;
+    if (!this.productToDelete) {
+      return;
+    }
 
     this.isDeleting = true;
+    this.cdr.detectChanges();
+
     const productId = this.productToDelete;
     const product = this.products.find((p) => p.id === productId);
     const productName = product ? product.name : "product";
 
     this.sellerService.deleteProduct(productId).subscribe({
-      next: () => {
+      next: (response) => {
         // Remove product from local array
         this.products = this.products.filter((p) => p.id !== productId);
         this.applyFilters();
 
+        // Show success toast
+        this.toastService.productDeleted(productName);
+
         // Close modal and reset state
         this.closeConfirmModal();
-
-        console.log("Product deleted successfully:", productId);
       },
       error: (error) => {
         console.error("Error deleting product:", error);
 
-        // More detailed error handling
+        // Handle different error types with toast notifications
         if (error.status === 404) {
+          this.toastService.warning(
+            "Product Not Found",
+            "This product no longer exists on the server. Removing from your list.",
+          );
           // Remove from local array if it doesn't exist on server
           this.products = this.products.filter((p) => p.id !== productId);
           this.applyFilters();
+        } else if (error.status === 403) {
+          this.toastService.error(
+            "Permission Denied",
+            "You don't have permission to delete this product.",
+          );
+        } else if (error.status === 401) {
+          this.toastService.authError();
+        } else if (error.status === 0) {
+          this.toastService.networkError();
+        } else if (error.status >= 500) {
+          this.toastService.serverError();
+        } else {
+          this.toastService.error(
+            "Delete Failed",
+            `Failed to delete "${productName}". Please try again later.`,
+          );
         }
 
         // Close modal and reset state
@@ -300,6 +335,7 @@ export class MyProductsComponent implements OnInit {
       message: "",
       type: "danger",
     };
+    this.cdr.detectChanges();
   }
 
   get totalProducts(): number {
