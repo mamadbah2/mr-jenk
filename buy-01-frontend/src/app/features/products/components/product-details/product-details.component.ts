@@ -19,6 +19,9 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
   selectedQuantity: number = 1;
   relatedProducts: ProductModels[] = [];
   isLoading: boolean = true;
+  hasError: boolean = false;
+  errorMessage: string = "";
+  errorType: "not-found" | "server-error" | "network-error" = "server-error";
   private routeSubscription: Subscription | null = null;
 
   private productService = inject(ProductService);
@@ -44,6 +47,8 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
   private loadProduct(): void {
     // Reset component state
     this.isLoading = true;
+    this.hasError = false;
+    this.errorMessage = "";
     this.product = null;
     this.selectedImage = "";
     this.selectedQuantity = 1;
@@ -61,8 +66,16 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
         error: (err) => {
           console.error("Error loading product:", err);
           this.isLoading = false;
+          this.hasError = true;
+          this.handleError(err);
         },
       });
+    } else {
+      // No ID provided - should redirect to products page
+      this.isLoading = false;
+      this.hasError = true;
+      this.errorType = "not-found";
+      this.errorMessage = "No product ID provided.";
     }
   }
 
@@ -203,5 +216,43 @@ export class ProductDetailsComponent implements OnInit, OnDestroy {
   private showSuccessMessage(message: string): void {
     // Simple alert for now - you can replace with a toast notification
     alert(message);
+  }
+
+  private handleError(error: any): void {
+    console.log("Error details:", error);
+
+    if (error.status === 404) {
+      this.errorType = "not-found";
+      this.errorMessage =
+        "Product not found. The product you're looking for doesn't exist or has been removed.";
+    } else if (error.status >= 500 && error.status < 600) {
+      this.errorType = "server-error";
+      this.errorMessage = "Server error occurred. Please try again later.";
+    } else if (error.status === 0 || error.name === "HttpErrorResponse") {
+      this.errorType = "network-error";
+      this.errorMessage =
+        "Network error. Please check your internet connection and try again.";
+    } else if (error.status >= 400 && error.status < 500) {
+      this.errorType = "not-found";
+      this.errorMessage = "The requested product could not be found.";
+    } else {
+      this.errorType = "server-error";
+      this.errorMessage =
+        "An unexpected error occurred. Please try again later.";
+    }
+  }
+
+  retryLoadProduct(): void {
+    this.hasError = false;
+    this.errorMessage = "";
+    this.loadProduct();
+  }
+
+  goToProducts(): void {
+    window.location.href = "/products";
+  }
+
+  goHome(): void {
+    window.location.href = "/";
   }
 }
