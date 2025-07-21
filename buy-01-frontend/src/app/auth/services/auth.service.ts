@@ -91,6 +91,7 @@ export class AuthService {
 
   getCurrentUser(): Observable<any> {
     const token = this.getToken();
+    console.log(token);
     if (!token) {
       return throwError(() => new Error("No token found"));
     }

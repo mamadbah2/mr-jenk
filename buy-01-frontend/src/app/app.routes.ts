@@ -6,6 +6,7 @@ import { sellerGuard } from "./auth/guards/seller.guard";
 import { ProductDetailsComponent } from "./features/products/components/product-details/product-details.component";
 import { SellerDashboardComponent } from "./features/seller/components/dashboard/seller-dashboard.component";
 import { MyProductsComponent } from "./features/seller/components/my-products/my-products.component";
+import { CreateProductComponent } from "./features/seller/components/create-product/create-product.component";
 
 export const routes: Routes = [
   { path: "auth", component: SignComponent },
@@ -44,14 +45,10 @@ export const routes: Routes = [
     component: MyProductsComponent,
     canActivate: [sellerGuard], // Only sellers
   },
-  // TODO: Create product component later
-  // {
-  //   path: "seller/create-product",
-  //   loadComponent: () =>
-  //     import(
-  //       "./features/seller/components/create-product/create-product.component"
-  //     ).then((m) => m.CreateProductComponent),
-  //   canActivate: [sellerGuard], // Only sellers
-  // },
+  {
+    path: "seller/create-product",
+    component: CreateProductComponent,
+    canActivate: [sellerGuard], // Only sellers
+  },
   { path: "", redirectTo: "products", pathMatch: "full" },
 ];

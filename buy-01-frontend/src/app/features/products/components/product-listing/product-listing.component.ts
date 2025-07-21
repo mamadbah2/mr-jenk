@@ -29,7 +29,9 @@ export class ProductListingComponent implements OnInit {
       const userData = localStorage.getItem("access_token");
       if (userData) {
         try {
-          this.currentUser = JSON.parse(userData);
+          const payload = userData.split(".")[1]; // Extract the payload part
+          const decodedPayload = atob(payload); // Decode Base64
+          this.currentUser = JSON.parse(decodedPayload); // Parse JSON
         } catch (error) {
           console.error("Error parsing user data:", error);
           this.currentUser = null;
