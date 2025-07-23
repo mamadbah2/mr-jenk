@@ -7,7 +7,7 @@
         </div>
     </div>
   @if (!isSignIn) {
-    <app-sign-up class="right-panel"></app-sign-up>
+    <app-sign-up class="right-panel" (isSignUp)="signUpDone($event)" ></app-sign-up>
   } @else {
     <app-sign-in class="right-panel"></app-sign-in>
   }

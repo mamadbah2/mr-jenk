@@ -9,4 +9,6 @@ import sn.dev.user_service.data.entities.User;
 @RepositoryRestResource(collectionResourceRel = "users", path = "users")
 public interface UserRepositories extends MongoRepository<User, String> {
     Optional<User> findByEmail(String email);
+
+    Object getUserByEmail(String email);
 }

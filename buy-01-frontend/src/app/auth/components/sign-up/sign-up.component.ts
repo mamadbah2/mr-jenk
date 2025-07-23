@@ -1,7 +1,6 @@
-import { Component } from '@angular/core';
+import {Component, EventEmitter, Input, Output} from '@angular/core';
 import {FormControl, FormGroup, ReactiveFormsModule, Validators} from '@angular/forms';
 import {AuthService} from '../../services/auth.service';
-import {NgIf} from '@angular/common';
 import {startWith} from 'rxjs';
 
 @Component({
@@ -13,10 +12,12 @@ import {startWith} from 'rxjs';
   styleUrls: ['./sign-up.component.css', '../sign/sign.component.css'],
 })
 export class SignUpComponent {
+  @Output() isSignUp = new EventEmitter<boolean>();
   selectedFileName : string = "Aucun fichier choisi"
   selectedFile:any
   isSeller = false
   ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif'];
+  errorOccured : string | null = null;
 
   registerForm = new FormGroup({
     firstName: new FormControl('', [Validators.required]),
@@ -34,7 +35,6 @@ export class SignUpComponent {
       startWith(this.registerForm.get('isSeller')?.value)
     ).subscribe((value) => {
       console.log(value)
-      console.log("***********")
       this.isSeller = !!value
       if (!this.isSeller) {
         this.selectedFile= null
@@ -64,9 +64,12 @@ export class SignUpComponent {
         next : value => {
           console.log(value)
           console.log("User cree avec succes")
+          this.isSignUp.emit(true)
         },
         error: err => {
           console.log(err)
+          this.errorOccured = err.status+ " - " + err.statusText;
+          setTimeout(()=> this.errorOccured = null, 5000)
           console.log("Erreur lors de la creation du user")
         }
       })

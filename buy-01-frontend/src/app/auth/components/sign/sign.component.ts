@@ -15,4 +15,8 @@ export class SignComponent {
   toggleSignIn() {
     this.isSignIn = !this.isSignIn;
   }
+
+  signUpDone(isSignUpDone: boolean) {
+    this.isSignIn = isSignUpDone;
+  }
 }

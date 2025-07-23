@@ -53,7 +53,6 @@ export class AuthService {
 
       return xender.pipe(
         switchMap((rep) => {
-          console.log("$@$@@@");
           console.log(rep);
           user.avatar = rep?.imageUrl;
           return this.httpClient
