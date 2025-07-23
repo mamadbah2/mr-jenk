@@ -2,6 +2,7 @@ package sn.dev.product_service.services.impl;
 
 import java.util.List;
 
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -11,12 +12,13 @@ import sn.dev.product_service.data.repo.ProductRepo;
 import sn.dev.product_service.services.ProductService;
 
 @Service
+@AllArgsConstructor
 public class ProductServiceImpl implements ProductService {
     private final ProductRepo productRepo;
 
-    public ProductServiceImpl(ProductRepo productRepo) {
-        this.productRepo = productRepo;
-    }
+//    public ProductServiceImpl(ProductRepo productRepo) {
+//        this.productRepo = productRepo;
+//    }
 
     @Override
     public Product create(Product product) {

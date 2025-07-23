@@ -1,12 +1,13 @@
 package sn.dev.user_service.data.entities;
 
-import lombok.Data;
+import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
-@Data
+@Getter
+@Setter
 public class User {
     @Id
     private String id;

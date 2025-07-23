@@ -1,5 +1,6 @@
 package sn.dev.user_service.services.events;
 
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
@@ -9,7 +10,7 @@ import sn.dev.user_service.data.entities.User;
 
 @Component
 @RepositoryEventHandler
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class UserEvents {
     private final PasswordEncoder passwordEncoder;
 

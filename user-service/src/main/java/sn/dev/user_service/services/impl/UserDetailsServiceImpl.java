@@ -1,6 +1,6 @@
 package sn.dev.user_service.services.impl;
 
-import lombok.RequiredArgsConstructor;
+import lombok.AllArgsConstructor;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,7 +14,7 @@ import sn.dev.user_service.data.entities.UserPrincipal;
 import sn.dev.user_service.data.repositories.UserRepositories;
 
 @Service
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     private final UserRepositories userRepositories;

@@ -1,5 +1,6 @@
 package sn.dev.user_service.web.controllers.impl;
 
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,7 +15,7 @@ import sn.dev.user_service.web.dto.requests.LoginRequests;
 import sn.dev.user_service.web.dto.responses.LoginResponse;
 
 @RestController
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class UserControllersImpl implements UserControllers {
     private final UserServices userServices;
     private final UserDetailsService userDetailsService;

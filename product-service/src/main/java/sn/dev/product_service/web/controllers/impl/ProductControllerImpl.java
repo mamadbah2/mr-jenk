@@ -1,7 +1,8 @@
 package sn.dev.product_service.web.controllers.impl;
 
+import jakarta.validation.Valid;
 import java.util.List;
-
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -10,9 +11,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
-
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import sn.dev.product_service.data.entities.Media;
 import sn.dev.product_service.data.entities.Product;
 import sn.dev.product_service.services.MediaServiceClient;
@@ -25,26 +23,34 @@ import sn.dev.product_service.web.dto.ProductUpdateDTO;
 @RestController
 @RequiredArgsConstructor
 public class ProductControllerImpl implements ProductController {
+
     private final ProductService productService;
     private final MediaServiceClient mediaServiceClient;
     private String maxAge = "300";
 
     @Override
-    public ResponseEntity<ProductResponseDTO> create(@Valid ProductCreateDTO productCreateDTO) {
+    public ResponseEntity<ProductResponseDTO> create(
+        @Valid ProductCreateDTO productCreateDTO
+    ) {
         System.out.println("CREATE product : " + productCreateDTO);
 
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Authentication auth =
+            SecurityContextHolder.getContext().getAuthentication();
         Jwt jwt = (Jwt) auth.getPrincipal();
         String userId = jwt.getClaimAsString("userID");
 
-        Product product = productService.create(productCreateDTO.toProduct(userId));
-        List<Media> medias = productCreateDTO.getImages().stream()
-                .map(file -> mediaServiceClient.upload(file, product.getId()))
-                .toList();
+        Product product = productService.create(
+            productCreateDTO.toProduct(userId)
+        );
+        List<Media> medias = productCreateDTO
+            .getImages()
+            .stream()
+            .map(file -> mediaServiceClient.upload(file, product.getId()))
+            .toList();
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .header(HttpHeaders.CACHE_CONTROL, "public, max-age=" + maxAge)
-                .body(new ProductResponseDTO(product, medias));
+            .header(HttpHeaders.CACHE_CONTROL, "public, max-age=" + maxAge)
+            .body(new ProductResponseDTO(product, medias));
     }
 
     @Override
@@ -52,15 +58,16 @@ public class ProductControllerImpl implements ProductController {
         System.out.println("GET(getAll) products");
 
         List<Product> products = productService.getAll();
-        List<ProductResponseDTO> responseList = products.stream()
-                .map(product -> {
-                    List<Media> medias = mediaServiceClient
-                            .getByProductId(product.getId())
-                            .getBody();
+        List<ProductResponseDTO> responseList = products
+            .stream()
+            .map(product -> {
+                List<Media> medias = mediaServiceClient
+                    .getByProductId(product.getId())
+                    .getBody();
 
-                    return new ProductResponseDTO(product, medias);
-                })
-                .toList();
+                return new ProductResponseDTO(product, medias);
+            })
+            .toList();
 
         return ResponseEntity.ok(responseList);
     }
@@ -70,24 +77,29 @@ public class ProductControllerImpl implements ProductController {
         System.out.println("GET(product by id) product with id: " + id);
 
         Product product = productService.getById(id);
-        List<Media> medias = mediaServiceClient
-                .getByProductId(id)
-                .getBody();
+        List<Media> medias = mediaServiceClient.getByProductId(id).getBody();
 
         return ResponseEntity.ok(new ProductResponseDTO(product, medias));
     }
 
     @Override
-    public ResponseEntity<ProductResponseDTO> update(@Valid ProductUpdateDTO productUpdateDTO, String id) {
+    public ResponseEntity<ProductResponseDTO> update(
+        @Valid ProductUpdateDTO productUpdateDTO,
+        String id
+    ) {
         System.out.println("UPDATE(product by id) product with id: " + id);
 
         Product product = productService.getById(id);
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Authentication auth =
+            SecurityContextHolder.getContext().getAuthentication();
         Jwt jwt = (Jwt) auth.getPrincipal();
         String userId = jwt.getClaimAsString("userID");
 
         if (!product.getUserId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to delete this product");
+            throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN,
+                "You are not allowed to update this product"
+            );
         }
 
         Product productToUpdate = productUpdateDTO.toProduct(userId);
@@ -95,12 +107,35 @@ public class ProductControllerImpl implements ProductController {
 
         Product updatedProduct = productService.update(productToUpdate);
 
-        List<Media> medias = mediaServiceClient.getByProductId(updatedProduct.getId()).getBody();
+        // Handle new images if provided
+        if (
+            productUpdateDTO.getImages() != null &&
+            !productUpdateDTO.getImages().isEmpty()
+        ) {
+            System.out.println(
+                "Uploading " +
+                productUpdateDTO.getImages().size() +
+                " new images for product " +
+                id
+            );
+            productUpdateDTO
+                .getImages()
+                .forEach(file -> {
+                    System.out.println(
+                        "Uploading image: " + file.getOriginalFilename()
+                    );
+                    mediaServiceClient.upload(file, updatedProduct.getId());
+                });
+        }
+
+        // Get all medias (existing + newly uploaded)
+        List<Media> medias = mediaServiceClient
+            .getByProductId(updatedProduct.getId())
+            .getBody();
 
         return ResponseEntity.ok()
-                .header(HttpHeaders.CACHE_CONTROL, "public, max-age=" + maxAge)
-                .body(new ProductResponseDTO(updatedProduct, medias));
-
+            .header(HttpHeaders.CACHE_CONTROL, "public, max-age=" + maxAge)
+            .body(new ProductResponseDTO(updatedProduct, medias));
     }
 
     @Override
@@ -108,12 +143,16 @@ public class ProductControllerImpl implements ProductController {
         System.out.println("DELETE(product by id) product with id: " + id);
 
         Product product = productService.getById(id);
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Authentication auth =
+            SecurityContextHolder.getContext().getAuthentication();
         Jwt jwt = (Jwt) auth.getPrincipal();
         String userId = jwt.getClaimAsString("userID");
 
         if (!product.getUserId().equals(userId)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not allowed to delete this product");
+            throw new ResponseStatusException(
+                HttpStatus.FORBIDDEN,
+                "You are not allowed to delete this product"
+            );
         }
 
         productService.delete(product);

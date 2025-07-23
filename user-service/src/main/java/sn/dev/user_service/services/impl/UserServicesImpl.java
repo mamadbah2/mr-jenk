@@ -1,5 +1,6 @@
 package sn.dev.user_service.services.impl;
 
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,7 +16,7 @@ import sn.dev.user_service.services.UserServices;
 import java.util.Arrays;
 
 @Service
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class UserServicesImpl implements UserServices {
 
     private final UserRepositories userRepositories;
