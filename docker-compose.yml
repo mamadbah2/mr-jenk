@@ -1,0 +1,67 @@
+version: '3.8'
+services:
+  eureka-server:
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    ports:
+      - "8761:8761"
+
+  config-service:
+    build:
+      context: ./config-service
+      dockerfile: Dockerfile
+    ports:
+      - "8888:8888"
+    environment:
+      - DOCKER_EUREKA_URL=http://eureka-server:8761/eureka 
+    depends_on:
+      - eureka-server
+
+  product-service:
+    build:
+      context: ./product-service
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      - DOCKER_EUREKA_URL=http://eureka-server:8761/eureka
+      - DOCKER_CONFIG_SERVICE_URL=http://config-service:8888/config
+      - DOCKER_MEDIA_SERVICE_URL=http://media-service:8083/api/media
+    depends_on:
+      - eureka-server
+      - config-service
+      - media-service
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      - DOCKER_EUREKA_URL=http://eureka-server:8761/eureka
+      - DOCKER_CONFIG_SERVICE_URL=http://config-service:8888/config
+    depends_on:
+      - eureka-server
+      - config-service
+
+  media-service:
+    build:
+      context: ./media-service
+      dockerfile: Dockerfile
+    ports:
+      - "8083:8083"
+    environment:
+      - DOCKER_EUREKA_URL=http://eureka-server:8761/eureka
+      - DOCKER_CONFIG_SERVICE_URL=http://config-service:8888/config
+    depends_on:
+      - eureka-server
+      - config-service
+
+  frontend:
+    build:
+      context: ./buy-01-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "4200:80"

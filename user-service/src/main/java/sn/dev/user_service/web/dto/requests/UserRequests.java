@@ -8,7 +8,6 @@ public class UserRequests {
     private String email;
     private String password;
     private String role;
-    private String avatar;
 
     public User toEntity() {
         User user = new User();

@@ -2,12 +2,9 @@ package sn.dev.user_service.web.dto.requests;
 
 import jakarta.validation.constraints.Email;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 import sn.dev.user_service.data.entities.User;
 
-@Getter
-@Setter
+@Data
 public class LoginRequests {
     @Email
     private String email;

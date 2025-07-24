@@ -3,7 +3,6 @@ package sn.dev.user_service.web.dto.responses;
 import lombok.Data;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import sn.dev.user_service.data.entities.User;
 
 import java.util.ArrayList;
 import java.util.List;

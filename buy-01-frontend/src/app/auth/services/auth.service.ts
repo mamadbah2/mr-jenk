@@ -5,12 +5,13 @@ import { LoginResponse } from "../models/login.response";
 import { User } from "../models/user";
 import { MediaResponse } from "../models/media.response";
 import { Router } from "@angular/router";
+import { environment } from "../../../environments/environment";
 
 @Injectable({
   providedIn: "root",
 })
 export class AuthService {
-  private apiUrl = "http://localhost:8080";
+  private apiUrl = environment.apiUrl;
   private isAuthenticate: boolean = false;
   private tokenCheckInterval: any;
 

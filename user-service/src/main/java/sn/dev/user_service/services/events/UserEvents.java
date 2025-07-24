@@ -1,7 +1,6 @@
 package sn.dev.user_service.services.events;
 
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.security.crypto.password.PasswordEncoder;
