@@ -61,33 +61,16 @@ export class SignInComponent {
                     detail: { loggedIn: true, user: userData },
                   }),
                 );
-
                 this.router.navigate(["/"]).then();
               },
               error: (err) => {
+                console.log("2222222222222222222222222222222222")
                 console.warn("Failed to fetch user details after login:", err);
-                // Fallback to basic user data from login response
-                const userData: User = {
-                  id: loginResponse.email,
-                  email: loginResponse.email,
-                  role: loginResponse.role.includes("SELLER")
-                    ? ("SELLER" as const)
-                    : ("CLIENT" as const),
-                };
-                localStorage.setItem("currentUser", JSON.stringify(userData));
-
-                // Dispatch custom event even with basic data
-                window.dispatchEvent(
-                  new CustomEvent("authStateChanged", {
-                    detail: { loggedIn: true, user: userData },
-                  }),
-                );
-
-                this.router.navigate(["/"]).then();
               },
             });
           },
           error: (err) => {
+            console.log("5555555555555555555555555555555555555555555555")
             this.error_message = err;
             setTimeout(() => (this.error_message = null), 2000);
           },

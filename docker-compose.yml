@@ -39,7 +39,7 @@ services:
       - DOCKER_EUREKA_URL=http://eureka-server:8761/eureka
       - DOCKER_CONFIG_SERVICE_URL=http://config-service:8888
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      test: ["CMD", "curl", "-f", "https://localhost:8080/actuator/health"]
       interval: 10s
       retries: 5
       start_period: 5s

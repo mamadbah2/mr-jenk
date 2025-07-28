@@ -42,7 +42,7 @@ export class AuthInterceptor implements HttpInterceptor {
           this.authService.logout();
 
           // Navigate to products page
-          this.router.navigate(['/products']).then(() => {
+          this.router.navigate(['/auth']).then(() => {
             // Optional: Show a message to the user
             console.log('Session expired. Please log in again.');
           });

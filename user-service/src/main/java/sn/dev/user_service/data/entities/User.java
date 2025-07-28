@@ -1,5 +1,6 @@
 package sn.dev.user_service.data.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
@@ -14,6 +15,7 @@ public class User {
     private String name;
     @Indexed(unique = true)
     private String email;
+    @JsonIgnore
     private String password;
     private Role role;
     private String avatar;
