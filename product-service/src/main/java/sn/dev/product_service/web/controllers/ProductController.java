@@ -3,6 +3,7 @@ package sn.dev.product_service.web.controllers;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -18,6 +19,7 @@ import sn.dev.product_service.web.dto.ProductUpdateDTO;
 
 @RequestMapping("/api/products")
 public interface ProductController {
+    @PreAuthorize("hasRole('SELLER')")
     @PostMapping
     ResponseEntity<ProductResponseDTO> create(@ModelAttribute @Valid ProductCreateDTO productCreateDTO);
 
@@ -27,10 +29,12 @@ public interface ProductController {
     @GetMapping("/{id}")
     ResponseEntity<ProductResponseDTO> getById(@PathVariable String id);
 
+    @PreAuthorize("hasRole('SELLER')")
     @PutMapping("/{id}")
     ResponseEntity<ProductResponseDTO> update(@ModelAttribute @Valid ProductUpdateDTO productUpdateDTO,
             @PathVariable String id);
 
+    @PreAuthorize("hasRole('SELLER')")
     @DeleteMapping("/{id}")
     ResponseEntity<Void> delete(@PathVariable String id);
 }

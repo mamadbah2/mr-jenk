@@ -39,10 +39,12 @@ export class SignInComponent {
         .subscribe({
           next: (loginResponse: LoginResponse) => {
             this.authService.setToken(loginResponse.token);
-
+            console.log("loginResponse", loginResponse);
             // Fetch complete user data from backend
             this.authService.getCurrentUser().subscribe({
               next: (userResponse) => {
+                console.log("uswerResponse", userResponse);
+                // Store user data in
                 const userData: User = {
                   id: userResponse.id || userResponse.email,
                   email: userResponse.email,
