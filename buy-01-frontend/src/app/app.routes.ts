@@ -7,6 +7,7 @@ import { ProductDetailsComponent } from "./features/products/components/product-
 import { MyProductsComponent } from "./features/seller/components/my-products/my-products.component";
 import { CreateProductComponent } from "./features/seller/components/create-product/create-product.component";
 import { EditProductComponent } from "./features/seller/components/edit-product/edit-product.component";
+import { MyAccountComponent } from "./features/seller/components/my-account/my-account.component";
 import { NotFoundComponent } from "./shared/components/not-found/not-found.component";
 
 export const routes: Routes = [
@@ -51,6 +52,11 @@ export const routes: Routes = [
     path: "seller/edit-product/:id",
     component: EditProductComponent,
     canActivate: [sellerGuard], // Only sellers
+  },
+  {
+    path: "seller/my-account",
+    component: MyAccountComponent,
+    canActivate: [authGuard], // Only authenticated users
   },
   { path: "", redirectTo: "products", pathMatch: "full" },
   { path: "**", component: NotFoundComponent }, // Wildcard route for 404 errors

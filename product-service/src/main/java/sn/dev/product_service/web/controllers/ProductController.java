@@ -19,7 +19,7 @@ import sn.dev.product_service.web.dto.ProductUpdateDTO;
 
 @RequestMapping("/api/products")
 public interface ProductController {
-    @PreAuthorize("hasRole('SELLER')")
+    @PreAuthorize("hasAuthority('SELLER')")
     @PostMapping
     ResponseEntity<ProductResponseDTO> create(@ModelAttribute @Valid ProductCreateDTO productCreateDTO);
 
@@ -29,12 +29,12 @@ public interface ProductController {
     @GetMapping("/{id}")
     ResponseEntity<ProductResponseDTO> getById(@PathVariable String id);
 
-    @PreAuthorize("hasRole('SELLER')")
+    @PreAuthorize("hasAuthority('SELLER')")
     @PutMapping("/{id}")
     ResponseEntity<ProductResponseDTO> update(@ModelAttribute @Valid ProductUpdateDTO productUpdateDTO,
             @PathVariable String id);
 
-    @PreAuthorize("hasRole('SELLER')")
+    @PreAuthorize("hasAuthority('SELLER')")
     @DeleteMapping("/{id}")
     ResponseEntity<Void> delete(@PathVariable String id);
 }

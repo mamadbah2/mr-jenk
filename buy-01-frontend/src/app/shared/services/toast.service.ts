@@ -157,4 +157,21 @@ export class ToastService {
       'Something went wrong on our end. Please try again later.'
     );
   }
+
+  // Convenience methods with simple message parameter
+  showSuccess(message: string, duration?: number): void {
+    this.success('Success', message, duration);
+  }
+
+  showError(message: string, duration?: number): void {
+    this.error('Error', message, duration);
+  }
+
+  showWarning(message: string, duration?: number): void {
+    this.warning('Warning', message, duration);
+  }
+
+  showInfo(message: string, duration?: number): void {
+    this.info('Info', message, duration);
+  }
 }

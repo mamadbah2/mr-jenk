@@ -30,6 +30,12 @@
                 Products
               </a>
 
+              <!-- My Account Link -->
+              <a routerLink="/seller/my-account" class="dropdown-item" (click)="closeDropdown()">
+                <lucide-icon [img]="User" class="dropdown-icon"></lucide-icon>
+                My Account
+              </a>
+
               <!-- Seller Specific Navigation -->
               <ng-container *ngIf="isSeller">
                 <div class="dropdown-divider"></div>
@@ -79,6 +85,15 @@
              (click)="navigateToProducts()">
             <lucide-icon [img]="Home" class="nav-icon"></lucide-icon>
             <span>Products</span>
+          </a>
+
+          <!-- My Account Link -->
+          <a routerLink="/my-account"
+             routerLinkActive="active"
+             class="mobile-nav-link"
+             (click)="closeMobileMenu()">
+            <lucide-icon [img]="User" class="nav-icon"></lucide-icon>
+            <span>My Account</span>
           </a>
 
           <!-- Seller Specific Navigation in Mobile -->
