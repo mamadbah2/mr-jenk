@@ -31,8 +31,9 @@ public class CloudStorageServiceImpl implements CloudStorageService {
     @Override
     public String upload(MultipartFile file) {
         try {
-            // Generate a unique file name using UUID and the original file name
-            String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+            // Generate a unique file name using UUID and the sanitized original file name
+            String sanitizedFileName = sanitizeFileName(file.getOriginalFilename());
+            String fileName = UUID.randomUUID() + "_" + sanitizedFileName;
 
             // Create headers with the API key and content type
             HttpHeaders headers = new HttpHeaders();
@@ -65,5 +66,45 @@ public class CloudStorageServiceImpl implements CloudStorageService {
         } catch (Exception e) {
             throw new RuntimeException("Failed to upload file to cloud storage", e);
         }
+    }
+
+    /**
+     * Sanitizes a filename by removing special characters, emojis, and spaces
+     * that are not allowed in Supabase Storage keys
+     */
+    private String sanitizeFileName(String originalFileName) {
+        if (originalFileName == null || originalFileName.trim().isEmpty()) {
+            return "file";
+        }
+
+        // Remove file extension first
+        String nameWithoutExtension = originalFileName;
+        String extension = "";
+        int lastDotIndex = originalFileName.lastIndexOf('.');
+        if (lastDotIndex > 0) {
+            nameWithoutExtension = originalFileName.substring(0, lastDotIndex);
+            extension = originalFileName.substring(lastDotIndex);
+        }
+
+        // Remove emojis and special characters, keep only alphanumeric, dots, hyphens, and underscores
+        String sanitized = nameWithoutExtension.replaceAll("[^a-zA-Z0-9._-]", "");
+        
+        // Remove multiple consecutive dots, hyphens, or underscores
+        sanitized = sanitized.replaceAll("[._-]+", "_");
+        
+        // Remove leading/trailing dots, hyphens, or underscores
+        sanitized = sanitized.replaceAll("^[._-]+|[._-]+$", "");
+        
+        // If sanitized name is empty, use "file"
+        if (sanitized.isEmpty()) {
+            sanitized = "file";
+        }
+
+        // Limit length to 50 characters (excluding extension)
+        if (sanitized.length() > 50) {
+            sanitized = sanitized.substring(0, 50);
+        }
+
+        return sanitized + extension;
     }
 }
