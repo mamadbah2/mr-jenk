@@ -121,10 +121,12 @@ export class AuthService {
 
       const userData = {
         id: payload.userID,
-        email: payload.email,
-        role: payload.role,
-        name: payload.name || payload.email.split("@")[0],
+        email: payload.sub,
+        role: payload.authorities,
+        name: payload.name || payload.sub.split("@")[0],
       };
+
+      console.log("userData:===========", userData);
 
       return of(userData);
     } catch (error) {
