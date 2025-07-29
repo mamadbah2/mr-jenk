@@ -15,7 +15,11 @@ public class User {
     private String name;
     @Indexed(unique = true)
     private String email;
+<<<<<<< Updated upstream
     // @JsonIgnore
+=======
+//    @JsonIgnore
+>>>>>>> Stashed changes
     private String password;
     private Role role;
     private String avatar;

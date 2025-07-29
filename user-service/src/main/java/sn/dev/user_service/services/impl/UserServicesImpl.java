@@ -13,6 +13,7 @@ import sn.dev.user_service.services.JWTServices;
 import sn.dev.user_service.services.UserServices;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -49,4 +50,15 @@ public class UserServicesImpl implements UserServices {
                         () -> new AuthenticationCredentialsNotFoundException("User not found with email: " + email));
     }
 
+    @Override
+    public User findById(String id) {
+        return userRepositories.findById(id)
+                .orElseThrow(
+                        () -> new AuthenticationCredentialsNotFoundException("User not found with id: " + id));
+    }
+
+    @Override
+    public List<User> findAllUsers() {
+        return userRepositories.findAll();
+    }
 }
