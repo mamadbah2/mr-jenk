@@ -52,7 +52,9 @@ public class SecurityConfig {
                         .requestMatchers(
                                 HttpMethod.GET,
                                 "/api/users",
-                                "/api/users/{id}"
+                                "/api/users/{id}",
+                                "/api/users/custom",
+                                "/api/users/{userID}/custom"
                         ).authenticated()
                         .requestMatchers(
                                 HttpMethod.POST,

@@ -15,13 +15,13 @@ export interface UserProfile {
 
 export interface UpdateUserRequest {
   name?: string;
-  email?: string;
+  password?: string;
   avatar?: string | null;
 }
 
 export interface UpdateUserWithFileRequest {
   name?: string;
-  email?: string;
+  password?: string;
   avatarFile?: File;
 }
 
@@ -68,7 +68,7 @@ export class UserService {
     console.log('Fetching user profile for user ID : ', this.getCurrentUserId());
 
     // Assuming the backend has an endpoint to get current user info
-    return this.http.get<any>(`${this.apiUrl}/${this.getCurrentUserId()}`, { headers })
+    return this.http.get<any>(`${this.apiUrl}/${this.getCurrentUserId()}/custom`, { headers })
       .pipe(catchError(this.handleError));
   }
 
@@ -87,8 +87,8 @@ export class UserService {
     if (userData.name !== undefined) {
       updateData.name = userData.name;
     }
-    if (userData.email !== undefined) {
-      updateData.email = userData.email;
+    if (userData.password !== undefined) {
+      updateData.password = userData.password;
     }
     if (userData.avatar !== undefined) {
       updateData.avatar = userData.avatar; // This can be null to remove avatar
@@ -119,7 +119,7 @@ export class UserService {
       // No file to upload, just update text fields
       return this.updateUserProfile({
         name: userData.name,
-        email: userData.email
+        password: userData.password
       });
     }
 
@@ -139,8 +139,8 @@ export class UserService {
         if (userData.name !== undefined && userData.name !== null) {
           updateData.name = userData.name;
         }
-        if (userData.email !== undefined && userData.email !== null) {
-          updateData.email = userData.email;
+        if (userData.password !== undefined && userData.password !== null) {
+          updateData.password = userData.password;
         }
         
         // Set the avatar URL from the media response

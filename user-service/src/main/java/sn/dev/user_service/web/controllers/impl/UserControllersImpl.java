@@ -36,7 +36,7 @@ public class UserControllersImpl implements UserControllers {
     }
 
     @Override
-    @GetMapping("api/custom/users/{userID}")
+    @GetMapping("api/users/{userID}/custom")
     public ResponseEntity<UserResponse> getUser(@PathVariable String userID) {
         User user = userServices.findById(userID);
         UserResponse userResponse = new UserResponse(user);
@@ -45,7 +45,7 @@ public class UserControllersImpl implements UserControllers {
     }
 
     @Override
-    @GetMapping("api/custom/users")
+    @GetMapping("api/users/custom")
     public ResponseEntity<CollectionModel<UserResponse>> getUsers() {
         List<User> users = userServices.findAllUsers();
 

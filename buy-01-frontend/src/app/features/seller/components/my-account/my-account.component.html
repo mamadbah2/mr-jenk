@@ -28,7 +28,7 @@
             <img *ngIf="getAvatarUrl()" [src]="getAvatarUrl()" [alt]="userProfile.name" class="avatar-image">
             <lucide-icon *ngIf="!getAvatarUrl()" [img]="User" class="avatar-icon"></lucide-icon>
           </div>
-          <div *ngIf="isEditMode" class="avatar-upload">
+          <div *ngIf="isEditMode && canEditAvatar()" class="avatar-upload">
             <label for="avatar-input" class="upload-label">
               <lucide-icon [img]="Camera" class="camera-icon"></lucide-icon>
               <span>Change Photo</span>
@@ -51,6 +51,14 @@
               <span>Remove Photo</span>
             </button>
           </div>
+          
+          <!-- Avatar restriction message for non-sellers -->
+          <div *ngIf="isEditMode && !canEditAvatar()" class="avatar-restriction">
+            <p class="restriction-text">
+              <lucide-icon [img]="User" class="restriction-icon"></lucide-icon>
+              Avatar changes are only available for seller accounts
+            </p>
+          </div>
         </div>
       </div>
 
@@ -66,16 +74,14 @@
             <div class="info-value">{{ userProfile.name }}</div>
           </div>
 
-          <!-- Email -->
-          <div class="info-item">
-            <div class="info-label">
-              <lucide-icon [img]="Mail" class="info-icon"></lucide-icon>
-              Email Address
-            </div>
-            <div class="info-value">{{ userProfile.email }}</div>
-          </div>
-
-          <!-- Role -->
+            <!-- Email (Read-only in view mode) -->
+            <div class="info-item">
+              <div class="info-label">
+                <lucide-icon [img]="Mail" class="info-icon"></lucide-icon>
+                Email Address
+              </div>
+              <div class="info-value">{{ userProfile.email }}</div>
+            </div>          <!-- Role -->
           <div class="info-item">
             <div class="info-label">
               <lucide-icon [img]="User" class="info-icon"></lucide-icon>
@@ -118,21 +124,36 @@
               </div>
             </div>
 
-            <!-- Email Field -->
+            <!-- Password Field -->
             <div class="form-group">
-              <label for="email" class="form-label">
-                <lucide-icon [img]="Mail" class="label-icon"></lucide-icon>
-                Email Address *
+              <label for="password" class="form-label">
+                <lucide-icon [img]="Key" class="label-icon"></lucide-icon>
+                Password
               </label>
               <input
-                type="email"
-                id="email"
-                formControlName="email"
+                type="password"
+                id="password"
+                formControlName="password"
                 class="form-input"
-                [class.error]="isFieldInvalid('email')"
-                placeholder="Enter your email address">
-              <div class="error-message" *ngIf="isFieldInvalid('email')">
-                {{ getFieldError('email') }}
+                [class.error]="isFieldInvalid('password')"
+                placeholder="Enter new password (leave empty to keep current)">
+              <div class="error-message" *ngIf="isFieldInvalid('password')">
+                {{ getFieldError('password') }}
+              </div>
+              <div class="field-hint">
+                Leave empty to keep your current password
+              </div>
+            </div>
+
+            <!-- Email Field (Read-only) -->
+            <div class="form-group">
+              <label class="form-label">
+                <lucide-icon [img]="Mail" class="label-icon"></lucide-icon>
+                Email Address
+              </label>
+              <div class="form-input-readonly">
+                {{ userProfile.email }}
+                <span class="readonly-hint">Email cannot be changed</span>
               </div>
             </div>
 
@@ -146,6 +167,7 @@
                 <span class="role-badge" [class]="'role-' + userProfile.role.toLowerCase()">
                   {{ getRoleDisplayName() }}
                 </span>
+                <span class="readonly-hint">Account type cannot be changed</span>
               </div>
             </div>
 

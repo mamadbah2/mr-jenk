@@ -26,11 +26,8 @@ public class UserServicesImpl implements UserServices {
     @Override
     public String login(User user) {
         try {
-            System.out.println("##############################");
-            System.out.println(user.getPassword());
             Authentication authentication = authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(user.getEmail(), user.getPassword()));
-            System.out.println("******************************");
             if (authentication.isAuthenticated()) {
                 return jwtServices.generateToken(authentication, user.getId());
             }

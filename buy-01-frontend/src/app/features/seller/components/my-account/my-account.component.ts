@@ -3,7 +3,7 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
-import { LucideAngularModule, Edit3, User, Mail, Camera, Save, X } from 'lucide-angular';
+import { LucideAngularModule, Edit3, User, Mail, Camera, Save, X, Key } from 'lucide-angular';
 import { AuthService } from '../../../../auth/services/auth.service';
 import { ToastService } from '../../../../shared/services/toast.service';
 import { UserService, UserProfile } from '../../../../shared/services/user.service';
@@ -23,6 +23,7 @@ export class MyAccountComponent implements OnInit, OnDestroy {
   readonly Camera = Camera;
   readonly Save = Save;
   readonly X = X;
+  readonly Key = Key;
 
   userProfile: UserProfile | null = null;
   editForm: FormGroup;
@@ -54,7 +55,7 @@ export class MyAccountComponent implements OnInit, OnDestroy {
   private createEditForm(): FormGroup {
     return this.formBuilder.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.required, Validators.email]]
+      password: ['', [Validators.minLength(3)]] // Optional password field
     });
   }
 
@@ -113,7 +114,7 @@ export class MyAccountComponent implements OnInit, OnDestroy {
     if (this.userProfile) {
       this.editForm.patchValue({
         name: this.userProfile.name,
-        email: this.userProfile.email
+        password: '' // Always start with empty password
       });
       this.isEditMode = true;
     }
@@ -130,6 +131,14 @@ export class MyAccountComponent implements OnInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     if (input.files && input.files[0]) {
       const file = input.files[0];
+      
+      // Check permission first
+      if (!this.canEditAvatar()) {
+        this.toastService.showError('You do not have permission to change your avatar');
+        // Reset the input
+        input.value = '';
+        return;
+      }
       
       // Validate file type
       if (!file.type.startsWith('image/')) {
@@ -164,7 +173,7 @@ export class MyAccountComponent implements OnInit, OnDestroy {
         // Update with file upload
         const updateData = {
           name: formData.name,
-          email: formData.email,
+          password: formData.password || undefined, // Only include if not empty
           avatarFile: this.selectedFile
         };
 
@@ -189,7 +198,7 @@ export class MyAccountComponent implements OnInit, OnDestroy {
         // Update text fields only
         const updateData = {
           name: formData.name,
-          email: formData.email
+          password: formData.password || undefined // Only include if not empty
         };
 
         this.userService.updateUserProfile(updateData)
@@ -234,7 +243,11 @@ export class MyAccountComponent implements OnInit, OnDestroy {
         return 'Please enter a valid email address';
       }
       if (field.errors['minlength']) {
-        return `${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)} must be at least ${field.errors['minlength'].requiredLength} characters`;
+        const requiredLength = field.errors['minlength'].requiredLength;
+        if (fieldName === 'password') {
+          return `Password must be at least ${requiredLength} characters`;
+        }
+        return `${fieldName.charAt(0).toUpperCase() + fieldName.slice(1)} must be at least ${requiredLength} characters`;
       }
     }
     return '';
@@ -255,6 +268,11 @@ export class MyAccountComponent implements OnInit, OnDestroy {
     return this.userProfile.role.charAt(0).toUpperCase() + this.userProfile.role.slice(1).toLowerCase();
   }
 
+  canEditAvatar(): boolean {
+    // Only sellers can edit their avatar
+    return this.userProfile?.role === 'SELLER';
+  }
+
   goBack(): void {
     // Navigate back based on user role
     if (this.userProfile?.role === 'SELLER') {
@@ -267,6 +285,11 @@ export class MyAccountComponent implements OnInit, OnDestroy {
   removeAvatar(): void {
     if (!this.userProfile?.avatar) {
       this.toastService.showWarning('No avatar to remove');
+      return;
+    }
+
+    if (!this.canEditAvatar()) {
+      this.toastService.showError('You do not have permission to change your avatar');
       return;
     }
 

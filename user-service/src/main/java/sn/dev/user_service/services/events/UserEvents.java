@@ -3,6 +3,7 @@ package sn.dev.user_service.services.events;
 import lombok.AllArgsConstructor;
 import org.springframework.data.rest.core.annotation.HandleBeforeCreate;
 import org.springframework.data.rest.core.annotation.HandleBeforeDelete;
+import org.springframework.data.rest.core.annotation.HandleBeforeSave;
 import org.springframework.data.rest.core.annotation.RepositoryEventHandler;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -36,6 +37,29 @@ public class UserEvents {
             throw new UserAlreadyExistsException(user.getEmail());
         }
 
+    }
+
+    @HandleBeforeSave
+    public void handleUserUpdate(User user) {
+        // Ce handler est pour les mises à jour, donc un ID doit exister.
+        // On ignore les nouvelles entités, car elles sont gérées par @HandleBeforeCreate.
+        if (user.getId() == null) {
+            return;
+        }
+
+        // On récupère l'état actuel de l'utilisateur dans la base de données
+        // pour obtenir l'ancien mot de passe (qui est déjà haché).
+        userRepositories.findById(user.getId())
+                .map(User::getPassword)
+                .ifPresent(currentPasswordHash -> {
+                    // On vérifie si le mot de passe de la requête PATCH est différent
+                    // du mot de passe haché déjà en base.
+                    // S'il est différent, cela signifie qu'un nouveau mot de passe
+                    // en clair a été fourni et qu'il faut l'encoder.
+                    if (user.getPassword() != null && !user.getPassword().equals(currentPasswordHash)) {
+                        user.setPassword(passwordEncoder.encode(user.getPassword()));
+                    }
+                });
     }
 
     private void validationUser(User user) throws Exception {
