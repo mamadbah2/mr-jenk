@@ -47,6 +47,8 @@ public class UserEvents {
             return;
         }
 
+        handleUserDelete(user);
+
         // On récupère l'état actuel de l'utilisateur dans la base de données
         // pour obtenir l'ancien mot de passe (qui est déjà haché).
         userRepositories.findById(user.getId())

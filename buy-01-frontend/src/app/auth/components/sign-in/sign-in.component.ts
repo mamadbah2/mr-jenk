@@ -25,7 +25,7 @@ export class SignInComponent {
     ]),
   });
 
-  error_message = null;
+  error_message: string | null = null;
 
   constructor(
     private authService: AuthService,
@@ -66,14 +66,19 @@ export class SignInComponent {
                 this.router.navigate(["/"]).then();
               },
               error: (err) => {
-                console.log("2222222222222222222222222222222222")
                 console.warn("Failed to fetch user details after login:", err);
               },
             });
           },
           error: (err) => {
-            console.log("5555555555555555555555555555555555555555555555")
-            this.error_message = err;
+            console.warn("Login failed:", err);
+            if (err.status === 401) {
+              this.error_message = "Invalid email or password";
+            } else if (err.status === 403) {
+              this.error_message = "Access forbidden. Please contact support.";
+            } else {
+              this.error_message = "An unexpected error occurred. Please try again.";
+            }
             setTimeout(() => (this.error_message = null), 2000);
           },
         });
