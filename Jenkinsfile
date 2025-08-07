@@ -14,24 +14,83 @@ pipeline {
                 sh 'docker-compose up -d --build'
             }
         }
-        stage('Test') {
+        stage('Build in Unit Test') {
             steps {
                 echo 'Testing...'
-                // Add your test steps here
+                sh 'mvn clean package -DskipTests=false'
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/**/*.xml'
+                }
             }
         }
+        stage('Integration Test') {
+            steps {
+                script {
+                    try {
+                        sh 'docker-compose up --build -d'
+                    } finally {
+                        echo "Tearing down the test environment."
+                        sh 'docker-compose down -v --remove-orphans'
+                    }
+                }
+            }
+        }
+
         stage('Deploy') {
             steps {
-                echo 'Deploying...'
-                // Add your deploy steps here
+                script {
+                    echo 'Deploying...'
+                    docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
+                        def dockerhubUser = 'mamadbah2'
+                        def services = ['frontend', 'product-service', 'user-service', 'media-service', 'api-gateway', 'config-service', 'eureka-server']
+
+                        services.each { service ->
+                            // Nom de l'image locale
+                            def localImageName = "buy-01-${service}"
+
+                            // Nom de l'image pour le registre Docker Hub
+                            def taggedImageName = "${dockerhubUser}/${service}:${env.BUILD_NUMBER}"
+
+                            // Taguer l'image locale avec le nom du registre
+                            sh "docker tag ${localImageName}:latest ${taggedImageName}"
+
+                            // Pousser l'image vers Docker Hub
+                            sh "docker push ${taggedImageName}"
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Deploy Locally') {
+            steps {
+                script {
+                    echo "Déploiement sur la machine locale, version ${env.BUILD_NUMBER}..."
+
+                    // Exécute les commandes Docker-Compose en passant la variable d'environnement
+                    withEnv(["IMAGE_VERSION=${env.BUILD_NUMBER}"]) {
+                        // Télécharger les nouvelles images
+                        sh "docker-compose -f docker-compose-deploy.yml pull"
+                        // Redémarrer les conteneurs
+                        sh "docker-compose -f docker-compose-deploy.yml up -d"
+                    }
+                }
             }
         }
     }
 
     post {
-        always {
-            echo 'Cleaning up...'
-            // Add cleanup steps here
-        }
+         success {
+                mail to: 'bahmamadoubobosewa@gmail.com',
+                     subject: "SUCCESS: Pipeline ${env.JOB_NAME} [${env.BUILD_NUMBER}]",
+                     body: "La pipeline a réussi. Voir les détails sur ${env.BUILD_URL}"
+            }
+            failure {
+                mail to: 'bahmamadoubobosewa@gmail.com',
+                     subject: "FAILURE: Pipeline ${env.JOB_NAME} [${env.BUILD_NUMBER}]",
+                     body: "La pipeline a échoué à l'étape '${currentBuild.currentResult}'. Voir les logs sur ${env.BUILD_URL}"
+            }
     }
 }
