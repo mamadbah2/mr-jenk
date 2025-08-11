@@ -13,7 +13,6 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building...'
-                sh 'sudo apt-get update && sudo apt-get install docker-compose'
                 sh 'docker-compose up -d --build'
             }
         }
