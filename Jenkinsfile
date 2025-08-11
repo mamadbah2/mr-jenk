@@ -2,14 +2,7 @@ pipeline {
     agent any
 
     stages {
-        stage('Verify tooling') {
-            steps {
-                echo 'Verifying tooling...'
-                sh 'docker-compose --version'
-                sh 'java -version'
-                
-            }
-        }
+        
         stage('Build') {
             steps {
                 echo 'Building...'
