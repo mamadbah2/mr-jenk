@@ -5,11 +5,8 @@ pipeline {
         stage('Verify tooling') {
             steps {
                 echo 'Verifying tooling...'
-                sh 'docker compose version'
                 sh 'docker-compose --version'
                 sh 'java -version'
-                sh 'mvn -version'
-                sh 'docker --version'
                 
             }
         }
