@@ -23,7 +23,7 @@ pipeline {
                     cd discovery-service && mvn clean package -DskipTests && nohup mvn spring-boot:run &
                     cd ../config-service && mvn clean package -DskipTests && nohup mvn spring-boot:run &
                     cd ../api-gateway && mvn clean package -DskipTests && nohup mvn spring-boot:run &
-                    sleep 30 # Attente pour que les services soient prêts
+                    sleep 120 # Attente pour que les services soient prêts
                 '''
                 
                 echo '🧪 Tests des microservices dépendants...'
