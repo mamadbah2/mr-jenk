@@ -1,18 +1,30 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_USER = credentials('docker-hub-credentials') // Nom d'utilisateur et token du Docker Hub
+        IMAGE_VERSION = "${env.BUILD_NUMBER}"
+        SERVICES = "frontend product-service user-service media-service api-gateway config-service eureka-server"
+    }
+
     stages {
         
-        stage('Build') {
+        stage('Clean Docker') {
             steps {
-                echo 'Building...'
-                sh 'docker-compose up -d --build'
+                echo '🧹 Nettoyage Docker...'
+                sh 'docker system prune -af || true'
             }
         }
+        
         stage('Build in Unit Test') {
             steps {
                 echo 'Testing...'
-                sh 'mvn clean package -DskipTests=false'
+                sh 'cd discovery-service && mvn clean package -DskipTests=false'
+                sh 'cd ../config-service && mvn clean package -DskipTests=false'
+                sh 'cd ../api-gateway && mvn clean package -DskipTests=false'
+                sh 'cd ../user-service && mvn clean package -DskipTests=false'
+                sh 'cd ../product-service && mvn clean package -DskipTests=false'
+                sh 'cd ../media-service && mvn clean package -DskipTests=false'
             }
             post {
                 always {
@@ -30,6 +42,13 @@ pipeline {
                         sh 'docker-compose down -v --remove-orphans'
                     }
                 }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo 'Building...'
+                sh 'docker-compose up -d --build'
             }
         }
 
