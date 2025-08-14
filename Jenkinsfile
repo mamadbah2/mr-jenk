@@ -33,7 +33,6 @@ pipeline {
                     cd ../user-service && mvn clean package -DskipTests=false
                 '''
             }
-}
             post {
                 always {
                     junit '**/target/surefire-reports/**/*.xml'
