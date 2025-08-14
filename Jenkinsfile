@@ -22,9 +22,9 @@ pipeline {
                 sh 'cd discovery-service && mvn clean package -DskipTests=false'
                 sh 'cd config-service && mvn clean package -DskipTests=false'
                 sh 'cd api-gateway && mvn clean package -DskipTests=false'
-                sh 'cd user-service && mvn clean package -DskipTests=false'
                 sh 'cd product-service && mvn clean package -DskipTests=false'
                 sh 'cd media-service && mvn clean package -DskipTests=false'
+                sh 'cd user-service && mvn clean package -DskipTests=false'
             }
             post {
                 always {
