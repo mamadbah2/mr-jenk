@@ -18,14 +18,22 @@ pipeline {
         
         stage('Build in Unit Test') {
             steps {
-                echo 'Testing...'
-                sh 'cd discovery-service && mvn clean package -DskipTests=false'
-                sh 'cd config-service && mvn clean package -DskipTests=false'
-                sh 'cd api-gateway && mvn clean package -DskipTests=false'
-                sh 'cd product-service && mvn clean package -DskipTests=false'
-                sh 'cd media-service && mvn clean package -DskipTests=false'
-                sh 'cd user-service && mvn clean package -DskipTests=false'
+                echo '🚀 Lancement des services nécessaires pour les tests...'
+                sh '''
+                    cd discovery-service && mvn clean package -DskipTests && nohup mvn spring-boot:run &
+                    cd ../config-service && mvn clean package -DskipTests && nohup mvn spring-boot:run &
+                    cd ../api-gateway && mvn clean package -DskipTests && nohup mvn spring-boot:run &
+                    sleep 15 # Attente pour que les services soient prêts
+                '''
+                
+                echo '🧪 Tests des microservices dépendants...'
+                sh '''
+                    cd product-service && mvn clean package -DskipTests=false
+                    cd ../media-service && mvn clean package -DskipTests=false
+                    cd ../user-service && mvn clean package -DskipTests=false
+                '''
             }
+}
             post {
                 always {
                     junit '**/target/surefire-reports/**/*.xml'
