@@ -20,11 +20,11 @@ pipeline {
             steps {
                 echo '🚀 Lancement des services nécessaires pour les tests...'
                 sh '''
-                    cd discovery-service && mvn clean package -DskipTests && nohup mvn spring-boot:run &
+                    cd discovery-service && mvn clean package -DskipTests=false && mvn spring-boot:run &
                     sleep 40 &
-                    cd ../config-service && mvn clean package -DskipTests && nohup mvn spring-boot:run &
+                    cd ../config-service && mvn clean package -DskipTests=false && mvn spring-boot:run &
                     sleep 40 &
-                    cd ../api-gateway && mvn clean package -DskipTests && nohup mvn spring-boot:run &
+                    cd ../api-gateway && mvn clean package -DskipTests=false && mvn spring-boot:run &
                     sleep 40 # Attente pour que les services soient prêts
                 '''
                 
