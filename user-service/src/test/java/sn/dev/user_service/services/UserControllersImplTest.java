@@ -39,6 +39,7 @@ class UserControllersImplTest {
 
     @Test
     void testLoginSuccess() {
+        System.out.println("TEST LOGIN");
         // given
         LoginRequests loginRequests = new LoginRequests("john@example.com", "password123");
         sn.dev.user_service.data.entities.User mockUser = new sn.dev.user_service.data.entities.User();
@@ -68,11 +69,13 @@ class UserControllersImplTest {
 
     @Test
     void testGetUserById() {
+        System.out.println("TEST GET ONE USER CONTROLLER");
         // given
         sn.dev.user_service.data.entities.User mockUser = new sn.dev.user_service.data.entities.User();
         mockUser.setId("123");
         mockUser.setEmail("alice@example.com");
         mockUser.setPassword("pwd");
+        mockUser.setRole(Role.CLIENT);
 
         when(userServices.findById("123")).thenReturn(mockUser);
 
@@ -89,14 +92,17 @@ class UserControllersImplTest {
 
     @Test
     void testGetUsers() {
+        System.out.println("TEST GET ALL USERS CONTROLLERS");
         // given
         sn.dev.user_service.data.entities.User user1 = new sn.dev.user_service.data.entities.User();
         user1.setId("1");
         user1.setEmail("bob@example.com");
+        user1.setRole(Role.SELLER);
 
         sn.dev.user_service.data.entities.User user2 = new sn.dev.user_service.data.entities.User();
         user2.setId("2");
         user2.setEmail("jane@example.com");
+        user2.setRole(Role.CLIENT);
 
         when(userServices.findAllUsers()).thenReturn(List.of(user1, user2));
 
