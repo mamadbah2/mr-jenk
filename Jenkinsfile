@@ -65,10 +65,12 @@ pipeline {
                 script {
                     echo 'Deploying...'
                     docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
+                        echo 'Successful Registration'
                         def dockerhubUser = 'mamadbah2'
                         def services = ['frontend', 'product-service', 'user-service', 'media-service', 'api-gateway', 'config-service', 'eureka-server']
-
+                        echo 'Starting Services'
                         services.each { service ->
+                            echo "buy-01-${service}..."
                             // Nom de l'image locale
                             def localImageName = "buy-01-${service}"
 
