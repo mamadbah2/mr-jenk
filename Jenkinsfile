@@ -64,7 +64,6 @@ pipeline {
             steps {
                 script {
                     echo 'Deploying...'
-                    docker.withRegistry('https://registry.hub.docker.com', 'docker-hub-credentials') {
                         echo 'Successful Registration'
                         def dockerhubUser = 'mamadbah2'
                         def services = ['frontend', 'product-service', 'user-service', 'media-service', 'api-gateway', 'config-service', 'eureka-server']
@@ -83,7 +82,7 @@ pipeline {
                             // Pousser l'image vers Docker Hub
                             sh "docker push ${taggedImageName}"
                         }
-                    }
+
                 }
             }
         }
