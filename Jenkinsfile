@@ -64,13 +64,17 @@ pipeline {
             steps {
                 script {
                     echo 'Deploying...'
-                    docker.withRegistry('', 'dockerhub-credential') {
                         echo 'Successful Registration'
                         def dockerhubUser = 'mamadbah2'
                         def services = ['frontend', 'product-service', 'user-service', 'media-service', 'api-gateway', 'config-service', 'eureka-server']
                         echo 'Starting Services'
                         services.each { service ->
                             echo "buy-01-${service}..."
+
+                            withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'mamadbah2', passwordVariable: '$Docker2022')]) {
+                                sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
+                            }
+
                             // Nom de l'image locale
                             def localImageName = "my_buy01_pipeline-${service}"
 
@@ -83,7 +87,7 @@ pipeline {
                             // Pousser l'image vers Docker Hub
                             sh "docker push ${taggedImageName}"
                         }
-                    }
+
                 }
             }
         }
