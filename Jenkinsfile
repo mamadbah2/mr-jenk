@@ -71,9 +71,16 @@ pipeline {
                         services.each { service ->
                             echo "buy-01-${service}..."
 
-                            withCredentials([usernamePassword(credentialsId: 'docker-hub-credentials', usernameVariable: 'mamadbah2', passwordVariable: '$Docker2022')]) {
+                            withCredentials([usernamePassword(
+                                credentialsId: 'dockerhub-credential',
+                                usernameVariable: 'DOCKER_USER',
+                                passwordVariable: 'DOCKER_PASS'
+                            )]) {
+
+                                sh "echo 'Username is: $DOCKER_USER'"
                                 sh "echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin"
                             }
+
 
                             // Nom de l'image locale
                             def localImageName = "my_buy01_pipeline-${service}"
