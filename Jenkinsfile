@@ -20,6 +20,7 @@ pipeline {
             steps {
                 echo '🚀 Lancement des services nécessaires pour les tests...'
                 sh '''
+                    ls -l
                     cd discovery-service && mvn clean package -DskipTests=false &
                     cd ../config-service && mvn clean package -DskipTests=false &
                     cd ../api-gateway && mvn clean package -DskipTests=false
