@@ -21,17 +21,15 @@ pipeline {
                 echo '🚀 Lancement des services nécessaires pour les tests...'
                 sh '''
                     cd discovery-service && mvn clean package -DskipTests=false &
-                    sleep 40 &
                     cd ../config-service && mvn clean package -DskipTests=false &
-                    sleep 40 &
-                    cd ../api-gateway && mvn clean package -DskipTests=false &
-                    sleep 40 # Attente pour que les services soient prêts
+                    cd ../api-gateway && mvn clean package -DskipTests=false
                 '''
                 
                 echo '🧪 Tests des microservices dépendants...'
                 sh '''
                     cd product-service && mvn clean package -DskipTests=false
                     cd ../user-service && mvn clean package -DskipTests=false
+                    # il manque plus que media
                 '''
             }
             post {
@@ -94,7 +92,6 @@ pipeline {
                             // Pousser l'image vers Docker Hub
                             sh "docker push ${taggedImageName}"
                         }
-
                 }
             }
         }
