@@ -21,7 +21,7 @@ pipeline {
                 echo '🚀 Lancement des services nécessaires pour les tests...'
                 sh '''
                     ls -l
-                    cd discovery-service && mvn clean package -DskipTests=false
+                    cd dscovery-service && mvn clean package -DskipTests=false
                     cd ../config-service && mvn clean package -DskipTests=false
                     cd ../api-gateway && mvn clean package -DskipTests=false
                 '''
@@ -76,7 +76,7 @@ pipeline {
                                 passwordVariable: 'DOCKER_PASS'
                             )]) {
 
-                                sh "echo 'Username is: $DOCKER_USER'"
+                                sh 'echo "Username is: $DOCKER_USER"'
                                 sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
                             }
 
