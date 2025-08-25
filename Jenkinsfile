@@ -21,7 +21,7 @@ pipeline {
                 echo '🚀 Lancement des services nécessaires pour les tests...'
                 sh '''
                     ls -l
-                    cd dscovery-service && mvn clean package -DskipTests=false
+                    cd diiscovery-service && mvn clean package -DskipTests=false
                     cd ../config-service && mvn clean package -DskipTests=false
                     cd ../api-gateway && mvn clean package -DskipTests=false
                 '''
@@ -31,6 +31,7 @@ pipeline {
                     cd product-service && mvn clean package -DskipTests=false
                     cd ../user-service && mvn clean package -DskipTests=false
                     # il manque plus que media
+                    # il manque aussi test frontend Jasmine
                 '''
             }
             post {
