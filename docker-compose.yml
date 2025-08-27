@@ -18,7 +18,8 @@ services:
     ports:
       - "8888:8888"
     environment:
-      - DOCKER_EUREKA_URL=http://eureka-server:8761/eureka 
+      - DOCKER_EUREKA_URL=http://eureka-server:8761/eureka
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
       interval: 10s
