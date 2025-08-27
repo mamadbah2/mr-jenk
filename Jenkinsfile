@@ -30,8 +30,7 @@ pipeline {
                 sh '''
                     cd product-service && mvn clean package -DskipTests=false
                     cd ../user-service && mvn clean package -DskipTests=false
-                    # il manque plus que media
-                    # il manque aussi test frontend Jasmine
+                    # il manque plus que media - il manque aussi test frontend Jasmine
                 '''
             }
             post {
