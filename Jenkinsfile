@@ -23,8 +23,10 @@ pipeline {
                 sh '''
                     ls -l
                     cd discovery-service && mvn clean package -DskipTests=false
+                    echo 'Affichage du token : '
                     echo '$GITHUB_TOKEN'
                     export GITHUB_TOKEN=$GITHUB_TOKEN
+                    echo 'printenv'
                     cd ../config-service && mvn clean package -DskipTests=false
                     cd ../api-gateway && mvn clean package -DskipTests=false
                 '''
