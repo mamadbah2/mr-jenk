@@ -35,7 +35,7 @@ pipeline {
                 sh '''
                     cd product-service && mvn clean package -DskipTests=false
                     cd ../user-service && mvn clean package -DskipTests=false
-                    cd ../buy-01-frontend && ng test
+                    cd ../media-service && mvn clean package -DskipTests=false
                     # il manque plus que media
                 '''
             }

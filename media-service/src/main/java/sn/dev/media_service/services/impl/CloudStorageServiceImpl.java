@@ -2,6 +2,7 @@ package sn.dev.media_service.services.impl;
 
 import java.util.UUID;
 
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -18,15 +19,15 @@ import sn.dev.media_service.services.CloudStorageService;
 public class CloudStorageServiceImpl implements CloudStorageService {
 
     @Value("${supabase.project-url}")
-    private String projectUrl;
+    public String projectUrl;
 
     @Value("${supabase.api-key}")
-    private String apiKey;
+    public String apiKey;
 
     @Value("${supabase.bucket-name}")
-    private String bucketName;
+    public String bucketName;
 
-    private RestTemplate restTemplate = new RestTemplate();
+    public RestTemplate restTemplate = new RestTemplate();
 
     @Override
     public String upload(MultipartFile file) {
