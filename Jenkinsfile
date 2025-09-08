@@ -122,11 +122,28 @@ pipeline {
 
     post {
          success {
+                sh "echo ${env.BUILD_NUMBER} > last_successful_build.txt"
                 mail to: 'bahmamadoubobosewa@gmail.com',
                      subject: "SUCCESS: Pipeline ${env.JOB_NAME} [${env.BUILD_NUMBER}]",
                      body: "La pipeline a réussi. Voir les détails sur ${env.BUILD_URL}"
             }
             failure {
+                script {
+                    echo "⚠️ Déploiement échoué, rollback en cours..."
+
+                    // Lire la dernière version déployée avec succès
+                    def lastSuccessfulBuild = sh(script: "cat last_successful_build.txt", returnStdout: true).trim()
+
+                    if (lastSuccessfulBuild) {
+                        echo "Rollback vers la version ${lastSuccessfulBuild}..."
+                        withEnv(["IMAGE_VERSION=${lastSuccessfulBuild}"]) {
+                            sh "docker-compose -f docker-compose-deploy.yml pull"
+                            sh "docker-compose -f docker-compose-deploy.yml up -d"
+                        }
+                    } else {
+                        echo "Aucune version précédente disponible pour rollback."
+                    }
+                }
                 mail to: 'bahmamadoubobosewa@gmail.com',
                      subject: "FAILURE: Pipeline ${env.JOB_NAME} [${env.BUILD_NUMBER}]",
                      body: "La pipeline a échoué à l'étape '${currentBuild.currentResult}'. Voir les logs sur ${env.BUILD_URL}"
