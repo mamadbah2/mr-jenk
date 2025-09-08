@@ -40,7 +40,7 @@ pipeline {
             }
             post {
                 always {
-                    junit '**/target/surefire-reports/**/*.xml'
+                    junit '**/target/surefire-reports/*.xml'
                 }
             }
         }
@@ -82,7 +82,7 @@ pipeline {
                             )]) {
 
                                 sh 'echo "Username is: $DOCKER_USER"'
-                                sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                                sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin  --config /tmp/.docker'
                             }
 
 
