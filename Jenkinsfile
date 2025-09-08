@@ -83,7 +83,7 @@ pipeline {
                             )]) {
 
                                 sh 'echo "Username is: $DOCKER_USER"'
-                                sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin  --config /tmp/.docker'
+                                sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
                             }
 
 
