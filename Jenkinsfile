@@ -22,7 +22,7 @@ pipeline {
                 echo '🚀 Lancement des services nécessaires pour les tests...'
                 sh '''
                     ls -l
-                    cd diiscovery-service && mvn clean package -DskipTests=false
+                    cd discovery-service && mvn clean package -DskipTests=false
                     echo 'Affichage du token : '
                     echo '$GITHUB_TOKEN'
                     export GITHUB_TOKEN=$GITHUB_TOKEN
@@ -35,7 +35,8 @@ pipeline {
                 sh '''
                     cd product-service && mvn clean package -DskipTests=false
                     cd ../user-service && mvn clean package -DskipTests=false
-                    # il manque plus que media - il manque aussi test frontend Jasmine
+                    cd ../buy-01-frontend && ng test
+                    # il manque plus que media
                 '''
             }
             post {
