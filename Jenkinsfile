@@ -22,7 +22,7 @@ pipeline {
                 echo '🚀 Lancement des services nécessaires pour les tests...'
                 sh '''
                     ls -l
-                    cd discovery-service && mvn clean package -DskipTests=false
+                    cd diiscovery-service && mvn clean package -DskipTests=false
                     echo 'Affichage du token : '
                     echo '$GITHUB_TOKEN'
                     export GITHUB_TOKEN=$GITHUB_TOKEN
