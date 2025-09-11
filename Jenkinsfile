@@ -148,6 +148,7 @@ pipeline {
 
                     // Exécute les commandes Docker-Compose en passant la variable d'environnement
                     withEnv(["IMAGE_VERSION=${env.BUILD_NUMBER}"]) {
+                        sh "docker-compose -f docker-compose-deploy.yml down"
                         // Télécharger les nouvelles images
                         sh "docker-compose -f docker-compose-deploy.yml pull"
                         // Redémarrer les conteneurs
@@ -175,6 +176,7 @@ pipeline {
                     if (lastSuccessfulBuild) {
                         echo "Rollback vers la version ${lastSuccessfulBuild}..."
                         withEnv(["IMAGE_VERSION=${lastSuccessfulBuild}"]) {
+                            sh "docker-compose -f docker-compose-deploy.yml down"
                             sh "docker-compose -f docker-compose-deploy.yml pull"
                             sh "docker-compose -f docker-compose-deploy.yml up -d"
                         }
