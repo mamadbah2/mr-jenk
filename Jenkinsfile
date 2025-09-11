@@ -20,7 +20,7 @@ pipeline {
         stage('Build in Unit Test') {
             steps {
                 echo '🚀 Lancement des services nécessaires pour les tests...'
-                 withSonarQubeEnv('SonarQube') {
+                 withSonarQubeEnv('safe-zone-mr-jenk') {
                      withCredentials([string(credentialsId: 'SONAR_USER_TOKEN', variable: 'SONAR_USER_TOKEN')]) {
                          sh '''
                              ls -l
