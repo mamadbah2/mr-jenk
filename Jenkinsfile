@@ -8,7 +8,7 @@ pipeline {
         GITHUB_TOKEN = credentials('GITHUB_TOKEN')
 
         // Media Service credentials
-        MONGODB_URI = credentials('MONGODB_URI')
+        MONGODB_URI = credentials('MONGODB_URI_CHEIKH')
         MONGODB_DATABASE = credentials('MONGODB_DATABASE')
         SUPABASE_PROJECT_URL = credentials('SUPABASE_PROJECT_URL')
         SUPABASE_API_KEY = credentials('SUPABASE_API_KEY')
