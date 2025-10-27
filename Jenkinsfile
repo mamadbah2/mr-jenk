@@ -20,7 +20,18 @@ pipeline {
         stage('Build in Unit Test') {
             steps {
                 echo '🚀 Lancement des services nécessaires pour les tests...'
-                 withSonarQubeEnv('safe-zone-mr-jenk') {
+
+                script {
+                    echo '🧪 Tests Frontend Angular (Headless)...'
+                    dir('buy-01-frontend') {
+                        sh '''
+                            npm install
+                            npm run test:headless
+                        '''
+                    }
+                }
+
+                withSonarQubeEnv('safe-zone-mr-jenk') {
                      withCredentials([string(credentialsId: 'SONAR_USER_TOKEN', variable: 'SONAR_USER_TOKEN')]) {
                          sh '''
                              ls -l
