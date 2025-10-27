@@ -1,3 +1,18 @@
+# Database configuration
+spring.data.mongodb.uri=${MONGODB_URI}
+spring.data.mongodb.database=${MONGODB_DATABASE}
+
+# Max file size per upload
+spring.servlet.multipart.max-file-size=2MB
+
+# Max total request size (important if multiple files/fields)
+spring.servlet.multipart.max-request-size=2MB
+
+# Supabase configuration
+supabase.project-url=${SUPABASE_PROJECT_URL}
+supabase.api-key=${SUPABASE_API_KEY}
+supabase.bucket-name=${SUPABASE_BUCKET_NAME}
+
 # Server configuration
 server.port=8083
 # Media Service Configuration
@@ -12,8 +27,6 @@ management.endpoint.health.show-details=always
 management.server.port=8083
 
 # File upload configuration
-spring.servlet.multipart.max-file-size=5MB
-spring.servlet.multipart.max-request-size=25MB
 spring.servlet.multipart.file-size-threshold=2KB
 spring.servlet.multipart.location=/tmp
 spring.servlet.multipart.enabled=true
@@ -24,7 +37,7 @@ file.upload.max-files=5
 file.upload.max-file-size=5242880
 file.upload.allowed-types=image/jpeg,image/jpg,image/png,image/webp,image/gif
 file.upload.max-filename-length=255
-file.upload.sec ure-filenames=true
+file.upload.secure-filenames=true
 
 # Media storage configuration
 media.storage.path=/tmp/media
@@ -34,3 +47,4 @@ media.storage.cleanup-on-startup=false
 server.servlet.session.tracking-modes=cookie
 server.servlet.session.cookie.http-only=true
 server.servlet.session.cookie.secure=false
+

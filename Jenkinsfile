@@ -6,6 +6,13 @@ pipeline {
         IMAGE_VERSION = "${env.BUILD_NUMBER}"
         SERVICES = "frontend product-service user-service media-service api-gateway config-service eureka-server"
         GITHUB_TOKEN = credentials('GITHUB_TOKEN')
+
+        // Media Service credentials
+        MONGODB_URI = credentials('MONGODB_URI')
+        MONGODB_DATABASE = credentials('MONGODB_DATABASE')
+        SUPABASE_PROJECT_URL = credentials('SUPABASE_PROJECT_URL')
+        SUPABASE_API_KEY = credentials('SUPABASE_API_KEY')
+        SUPABASE_BUCKET_NAME = credentials('SUPABASE_BUCKET_NAME')
     }
 
     stages {
@@ -19,7 +26,7 @@ pipeline {
         
         stage('Build in Unit Test') {
             steps {
-                echo '🚀 Lancement des services nécessaires pour les tests...'
+                echo '🚀 Lancement des tests...'
 
                 script {
                     echo '🧪 Tests Frontend Angular (Headless)...'
@@ -31,62 +38,39 @@ pipeline {
                     }
                 }
 
-                withSonarQubeEnv('safe-zone-mr-jenk') {
-                     withCredentials([string(credentialsId: 'SONAR_USER_TOKEN', variable: 'SONAR_USER_TOKEN')]) {
-                         sh '''
-                             ls -l
+                sh '''
+                    ls -l
 
-                             # 🚀 Discovery Service
-                             cd discovery-service
-                             mvn clean package -DskipTests=false sonar:sonar \
-                                 -Dsonar.projectKey=safe-zone-discovery \
-                                 -Dsonar.host.url=$SONAR_HOST_URL \
-                                 -Dsonar.login=$SONAR_USER_TOKEN
-                             cd ..
+                    # 🚀 Discovery Service
+                    cd discovery-service
+                    mvn clean test
+                    cd ..
 
-                             # 🚀 Config Service
-                             cd config-service
-                             mvn clean package -DskipTests=false sonar:sonar \
-                                 -Dsonar.projectKey=safe-zone-config \
-                                 -Dsonar.host.url=$SONAR_HOST_URL \
-                                 -Dsonar.login=$SONAR_USER_TOKEN
-                             cd ..
+                    # 🚀 Config Service
+                    cd config-service
+                    mvn clean test
+                    cd ..
 
-                             # 🚀 API Gateway
-                             cd api-gateway
-                             mvn clean package -DskipTests=false sonar:sonar \
-                                 -Dsonar.projectKey=safe-zone-api-gateway \
-                                 -Dsonar.host.url=$SONAR_HOST_URL \
-                                 -Dsonar.login=$SONAR_USER_TOKEN
-                             cd ..
+                    # 🚀 API Gateway
+                    cd api-gateway
+                    mvn clean test
+                    cd ..
 
-                             # 🚀 Product Service
-                             cd product-service
-                             mvn clean package -DskipTests=false sonar:sonar \
-                                 -Dsonar.projectKey=safe-zone-product \
-                                 -Dsonar.host.url=$SONAR_HOST_URL \
-                                 -Dsonar.login=$SONAR_USER_TOKEN
-                             cd ..
+                    # 🚀 Product Service
+                    cd product-service
+                    mvn clean test
+                    cd ..
 
-                             # 🚀 User Service
-                             cd user-service
-                             mvn clean package -DskipTests=false sonar:sonar \
-                                 -Dsonar.projectKey=safe-zone-user \
-                                 -Dsonar.host.url=$SONAR_HOST_URL \
-                                 -Dsonar.login=$SONAR_USER_TOKEN
-                             cd ..
+                    # 🚀 User Service
+                    cd user-service
+                    mvn clean test
+                    cd ..
 
-                             # 🚀 Media Service
-                             cd media-service
-                             mvn clean package -DskipTests=false sonar:sonar \
-                                 -Dsonar.projectKey=safe-zone-media \
-                                 -Dsonar.host.url=$SONAR_HOST_URL \
-                                 -Dsonar.login=$SONAR_USER_TOKEN
-                             cd ..
-                         '''
-                     }
-                 }
-
+                    # 🚀 Media Service
+                    cd media-service
+                    mvn clean test
+                    cd ..
+                '''
             }
             post {
                 always {
