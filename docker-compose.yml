@@ -13,6 +13,10 @@ x-spring-service-defaults: &spring-service-defaults
         memory: 256M
   restart: unless-stopped
 
+x-common-env: &common-env
+  DOCKER_EUREKA_URL: http://eureka-server:8761/eureka
+  DOCKER_CONFIG_SERVICE_URL: http://config-service:8888
+
 services:
   eureka-server:
     <<: *spring-service-defaults
@@ -57,8 +61,13 @@ services:
     ports:
       - "8083:8083"
     environment:
-      - DOCKER_EUREKA_URL=http://eureka-server:8761/eureka
-      - DOCKER_CONFIG_SERVICE_URL=http://config-service:8888
+      <<: *common-env
+      SPRING_PROFILES_ACTIVE: prod
+      MONGODB_URI: ${MONGODB_URI}
+      MONGODB_DATABASE: ${MONGODB_DATABASE}
+      SUPABASE_PROJECT_URL: ${SUPABASE_PROJECT_URL}
+      SUPABASE_API_KEY: ${SUPABASE_API_KEY}
+      SUPABASE_BUCKET_NAME: ${SUPABASE_BUCKET_NAME}
     healthcheck:
       <<: *healthcheck-defaults
       test: ["CMD", "curl", "-f", "http://localhost:8083/actuator/health"]
@@ -79,9 +88,8 @@ services:
     ports:
       - "8082:8082"
     environment:
-      - DOCKER_EUREKA_URL=http://eureka-server:8761/eureka
-      - DOCKER_CONFIG_SERVICE_URL=http://config-service:8888
-      - DOCKER_MEDIA_SERVICE_URL=http://media-service:8083/api/media
+      <<: *common-env
+      DOCKER_MEDIA_SERVICE_URL: http://media-service:8083/api/media
     healthcheck:
       <<: *healthcheck-defaults
       test: ["CMD", "curl", "-f", "http://localhost:8082/actuator/health"]
@@ -104,8 +112,7 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - DOCKER_EUREKA_URL=http://eureka-server:8761/eureka
-      - DOCKER_CONFIG_SERVICE_URL=http://config-service:8888
+      <<: *common-env
     healthcheck:
       <<: *healthcheck-defaults
       test: ["CMD", "curl", "-f", "http://localhost:8081/actuator/health"]
@@ -126,8 +133,7 @@ services:
     ports:
       - "5050:5050"
     environment:
-      - DOCKER_EUREKA_URL=http://eureka-server:8761/eureka
-      - DOCKER_CONFIG_SERVICE_URL=http://config-service:8888
+      <<: *common-env
     healthcheck:
       <<: *healthcheck-defaults
       test: ["CMD", "curl", "-k", "-f", "https://localhost:5050/actuator/health"]
