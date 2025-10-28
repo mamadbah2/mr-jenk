@@ -232,7 +232,7 @@ pipeline {
     post {
         success {
             script {
-                sh "echo ${env.BUILD_NUMBER} > last_successful_build.txt"
+                sh "echo ${env.BUILD_NUMBER} > ${env.WORKSPACE}/last_successful_build.txt"
 
                 // Nettoyer les anciennes images
                 sh '''
@@ -260,8 +260,8 @@ pipeline {
                 echo "⚠️ Pipeline échouée, rollback en cours..."
 
                 def lastSuccessfulBuild = ''
-                if (fileExists('last_successful_build.txt')) {
-                    lastSuccessfulBuild = readFile('last_successful_build.txt').trim()
+                if (fileExists("${env.WORKSPACE}/last_successful_build.txt")) {
+                    lastSuccessfulBuild = readFile("${env.WORKSPACE}/last_successful_build.txt").trim()
                 }
 
                 if (lastSuccessfulBuild && lastSuccessfulBuild != env.BUILD_NUMBER) {
