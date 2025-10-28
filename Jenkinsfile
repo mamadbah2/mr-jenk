@@ -26,51 +26,57 @@ pipeline {
         
         stage('Build in Unit Test') {
             steps {
-                echo '🚀 Lancement des tests...'
+                echo '🚀 Lancement des tests en parallèle...'
 
                 script {
-                    echo '🧪 Tests Frontend Angular (Headless)...'
-                    dir('buy-01-frontend') {
-                        sh '''
-                            npm install
-                            npm run test:headless
-                        '''
-                    }
+                    parallel(
+                        'Frontend': {
+                            echo '🧪 Tests Frontend Angular (Headless)...'
+                            dir('buy-01-frontend') {
+                                sh '''
+                                    npm install
+                                    npm run test:headless
+                                '''
+                            }
+                        },
+                        'Discovery Service': {
+                            echo '🚀 Tests Discovery Service...'
+                            dir('discovery-service') {
+                                sh 'mvn clean test'
+                            }
+                        },
+                        'Config Service': {
+                            echo '🚀 Tests Config Service...'
+                            dir('config-service') {
+                                sh 'mvn clean test'
+                            }
+                        },
+                        'API Gateway': {
+                            echo '🚀 Tests API Gateway...'
+                            dir('api-gateway') {
+                                sh 'mvn clean test'
+                            }
+                        },
+                        'Product Service': {
+                            echo '🚀 Tests Product Service...'
+                            dir('product-service') {
+                                sh 'mvn clean test'
+                            }
+                        },
+                        'User Service': {
+                            echo '🚀 Tests User Service...'
+                            dir('user-service') {
+                                sh 'mvn clean test'
+                            }
+                        },
+                        'Media Service': {
+                            echo '🚀 Tests Media Service...'
+                            dir('media-service') {
+                                sh 'mvn clean test'
+                            }
+                        }
+                    )
                 }
-
-                sh '''
-                    ls -l
-
-                    # 🚀 Discovery Service
-                    cd discovery-service
-                    mvn clean test
-                    cd ..
-
-                    # 🚀 Config Service
-                    cd config-service
-                    mvn clean test
-                    cd ..
-
-                    # 🚀 API Gateway
-                    cd api-gateway
-                    mvn clean test
-                    cd ..
-
-                    # 🚀 Product Service
-                    cd product-service
-                    mvn clean test
-                    cd ..
-
-                    # 🚀 User Service
-                    cd user-service
-                    mvn clean test
-                    cd ..
-
-                    # 🚀 Media Service
-                    cd media-service
-                    mvn clean test
-                    cd ..
-                '''
             }
             post {
                 always {
