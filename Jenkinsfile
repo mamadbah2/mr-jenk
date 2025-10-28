@@ -178,7 +178,10 @@ pipeline {
                     echo "🚀 Déploiement local, version ${env.BUILD_NUMBER}..."
 
                     timeout(time: 10, unit: 'MINUTES') {
-                        withEnv(["IMAGE_VERSION=${env.BUILD_NUMBER}"]) {
+                        withEnv([
+                            "IMAGE_VERSION=${env.BUILD_NUMBER}",
+                            "GITHUB_TOKEN=${env.GITHUB_TOKEN}"
+                        ]) {
                             sh '''
                                 docker-compose -f docker-compose-deploy.yml down
                                 docker-compose -f docker-compose-deploy.yml pull
