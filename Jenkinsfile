@@ -180,7 +180,12 @@ pipeline {
                     timeout(time: 10, unit: 'MINUTES') {
                         withEnv([
                             "IMAGE_VERSION=${env.BUILD_NUMBER}",
-                            "GITHUB_TOKEN=${env.GITHUB_TOKEN}"
+                            "GITHUB_TOKEN=${env.GITHUB_TOKEN}",
+                            "SUPABASE_PROJECT_URL=${env.SUPABASE_PROJECT_URL}",
+                            "SUPABASE_API_KEY=${env.SUPABASE_API_KEY}",
+                            "SUPABASE_BUCKET_NAME=${env.SUPABASE_BUCKET_NAME}",
+                            "MONGODB_URI=${env.MONGODB_URI}",
+                            "MONGODB_DATABASE=${env.MONGODB_DATABASE}"
                         ]) {
                             sh '''
                                 docker-compose -f docker-compose-deploy.yml down
