@@ -232,6 +232,7 @@ pipeline {
     post {
         success {
             script {
+                sh "touch ${env.WORKSPACE}/last_successful_build.txt && chmod 666 ${env.WORKSPACE}/last_successful_build.txt"
                 sh "echo ${env.BUILD_NUMBER} > ${env.WORKSPACE}/last_successful_build.txt"
 
                 // Nettoyer les anciennes images
