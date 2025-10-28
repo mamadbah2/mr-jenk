@@ -110,16 +110,20 @@ pipeline {
                 script {
                     timeout(time: 10, unit: 'MINUTES') {
                         try {
-                            sh '''
-                                docker-compose up -d
+                            withEnv([
+                                "GITHUB_TOKEN=${env.GITHUB_TOKEN}"  // ✅ Passe le token
+                            ]) {
+                                sh '''
+                                    docker-compose up -d
 
-                                # Attendre que les services soient prêts
-                                echo "⏳ Attente du démarrage des services..."
-                                sleep 60
+                                    # Attendre que les services soient prêts
+                                    echo "⏳ Attente du démarrage des services..."
+                                    sleep 60
 
-                                # Vérifier que les services sont en bonne santé
-                                docker-compose ps
-                            '''
+                                    # Vérifier que les services sont en bonne santé
+                                    docker-compose ps
+                                '''
+                            }
                         } finally {
                             sh 'docker-compose logs --tail=50'
                             sh 'docker-compose down -v --remove-orphans'
