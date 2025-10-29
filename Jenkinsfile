@@ -238,9 +238,6 @@ pipeline {
     post {
         success {
             script {
-                sh "touch ${env.WORKSPACE}/last_successful_build.txt && chmod 666 ${env.WORKSPACE}/last_successful_build.txt"
-                sh "echo ${env.BUILD_NUMBER} > ${env.WORKSPACE}/last_successful_build.txt"
-
                 // Nettoyer les anciennes images
                 sh '''
                     docker images | grep "${DOCKER_HUB_USER}" | grep -v "${IMAGE_VERSION}" | grep -v "latest" | awk '{print $3}' | xargs -r docker rmi -f || true
@@ -266,22 +263,19 @@ pipeline {
             script {
                 echo "⚠️ Pipeline échouée, rollback en cours..."
 
-                def lastSuccessfulBuild = ''
-                if (fileExists("${env.WORKSPACE}/last_successful_build.txt")) {
-                    lastSuccessfulBuild = readFile("${env.WORKSPACE}/last_successful_build.txt").trim()
-                }
+                def lastSuccessfulBuild = currentBuild.previousSuccessfulBuild
 
-                if (lastSuccessfulBuild && lastSuccessfulBuild != env.BUILD_NUMBER) {
-                    echo "🔄 Rollback vers la version ${lastSuccessfulBuild}..."
+                if (lastSuccessfulBuild && lastSuccessfulBuild.number != env.BUILD_NUMBER) {
+                    echo "🔄 Rollback vers la version ${lastSuccessfulBuild.number}..."
                     try {
-                        withEnv(["IMAGE_VERSION=${lastSuccessfulBuild}"]) {
+                        withEnv(["IMAGE_VERSION=${lastSuccessfulBuild.number}"]) {
                             sh '''
                                 docker-compose -f docker-compose-deploy.yml down
                                 docker-compose -f docker-compose-deploy.yml pull
                                 docker-compose -f docker-compose-deploy.yml up -d
                             '''
                         }
-                        echo "✅ Rollback réussi vers la version ${lastSuccessfulBuild}"
+                        echo "✅ Rollback réussi vers la version ${lastSuccessfulBuild.number}"
                     } catch (Exception e) {
                         echo "❌ Échec du rollback: ${e.message}"
                     }
