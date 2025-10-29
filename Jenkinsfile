@@ -256,6 +256,12 @@ pipeline {
                     """,
                     mimeType: 'text/html'
                 )
+
+                mail(
+                    to: 'bahmamadoubobosewa@gmail.com',
+                    subject: "SUCCESS: Pipeline ${env.JOB_NAME} [${env.BUILD_NUMBER}]",
+                    body: "Le pipeline a réussi.\nJob: ${env.JOB_NAME}\nBuild: ${env.BUILD_NUMBER}\nVoir les détails: ${env.BUILD_URL}"
+                )
             }
         }
 
@@ -295,6 +301,12 @@ pipeline {
                         <p><a href="${env.BUILD_URL}console">Voir les logs</a></p>
                     """,
                     mimeType: 'text/html'
+                )
+
+                mail(
+                    to: 'bahmamadoubobosewa@gmail.com',
+                    subject: "FAILURE: Pipeline ${env.JOB_NAME} [${env.BUILD_NUMBER}]",
+                    body: "Le pipeline a echoue.\nJob: ${env.JOB_NAME}\nBuild: ${env.BUILD_NUMBER}\nVoir les détails: ${env.BUILD_URL}"
                 )
             }
         }
