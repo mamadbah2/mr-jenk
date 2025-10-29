@@ -38,7 +38,7 @@ mvn test
 ### Option 2 : Export manuel des variables
 
 ```bash
-export MONGODB_URI="mongodb+srv://cherifmbaye02:weRcuZYf6zEFLhXz@cluster0.5q0byye.mongodb.net/z01?retryWrites=true&w=majority&appName=Cluster0"
+export MONGODB_URI="mongodb+srv://mamadbah:$Atlas2022@cluster0.wlwhrhg.mongodb.net/?appName=Cluster0"
 export MONGODB_DATABASE="z01"
 export SUPABASE_PROJECT_URL="https://mwkrwffquzzsvssigsup.supabase.co"
 export SUPABASE_API_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13a3J3ZmZxdXp6c3Zzc2lnc3VwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA3NTkzMDIsImV4cCI6MjA2NjMzNTMwMn0.5TeZ-h0zKCc5W2KUbP1R_nU7PZNaMbrVcOK59tmjVvU"
@@ -56,13 +56,13 @@ Allez dans **Jenkins** → **Manage Jenkins** → **Credentials** → **System**
 
 Ajoutez les 5 credentials suivants en tant que **Secret text** :
 
-| ID du Credential | Valeur | Description |
-|-----------------|--------|-------------|
-| `MONGODB_URI` | `mongodb+srv://cherifmbaye02:...` | URI complète MongoDB |
-| `MONGODB_DATABASE` | `z01` | Nom de la base de données |
+| ID du Credential | Valeur                                     | Description |
+|-----------------|--------------------------------------------|-------------|
+| `MONGODB_URI` | `mongodb+srv://mamadbah:...`               | URI complète MongoDB |
+| `MONGODB_DATABASE` | `z01`                                      | Nom de la base de données |
 | `SUPABASE_PROJECT_URL` | `https://mwkrwffquzzsvssigsup.supabase.co` | URL du projet Supabase |
-| `SUPABASE_API_KEY` | `eyJhbGciOiJIUzI1NiIsInR5cCI6...` | Clé API Supabase |
-| `SUPABASE_BUCKET_NAME` | `media-service` | Nom du bucket Supabase |
+| `SUPABASE_API_KEY` | `eyJhbGciOiJIUzI1NiIsInR5cCI6...`          | Clé API Supabase |
+| `SUPABASE_BUCKET_NAME` | `media-service`                            | Nom du bucket Supabase |
 
 ### 2. Le Jenkinsfile est déjà configuré
 
